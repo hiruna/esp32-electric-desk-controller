@@ -91,7 +91,7 @@ char deskHeightIndicatorUnitsStr[4] = "cm";
 
 char uiLockIconStrVal[4] = "\u004F";
 bool uiLocked = true;
-bool uiLockedMsgShown = false;
+bool midPopupMessageShown = false;
 
 UIWidgetGroup* prevMidContent = nullptr;
 UIWidgetGroup* currMidContent = nullptr;
@@ -107,26 +107,27 @@ void displayMidPopupMessage(const char* msg, uint32_t durationMillis) {
     });
     taskManager.scheduleOnce(durationMillis, [] {
         middleContentColumnCard.showPreviousVisibleWidget();
-        uiLockedMsgShown = false;
+        midPopupMessageShown = false;
     });
 }
 void showUILockedMsg() {
-    if (!uiLockedMsgShown) {
-        uiLockedMsgShown = true;
+    if (!midPopupMessageShown) {
+        midPopupMessageShown = true;
         displayMidPopupMessage("LOCKED", 1500);
     }
 }
 
 void showUIUnlockedMsg() {
-    if (!uiLockedMsgShown) {
-        uiLockedMsgShown = true;
-        displayMidPopupMessage("UNLOCK", 1500);
+    if (!midPopupMessageShown) {
+        midPopupMessageShown = true;
+        displayMidPopupMessage("UNLOCKED", 1500);
     }
 }
 void toggleUILock() {
     uiLocked = !uiLocked;
     if (uiLocked) {
         sprintf(uiLockIconStrVal, "%s", icon_8x8_padlock_closed);  // TODO
+        showUILockedMsg();
     } else {
         sprintf(uiLockIconStrVal, "%s", icon_8x8_padlock_opened);  // TODO
         showUIUnlockedMsg();
@@ -178,7 +179,7 @@ void ctrlPanelEncoderStatusHandler() {
     if (ctrlPanelEncoder.isEncoderButtonClicked()) {
         ctrlPanelEncoderOnBtnClick();
     }
-    if (ctrlPanelEncoder.isEncoderButtonClicked(500)) {
+    if (ctrlPanelEncoder.isEncoderButtonClicked(600)) {
         ctrlPanelEncoderOnBtnHeldDown();
     }
 }
