@@ -61,10 +61,39 @@ UIEnvelope deskHeightIndicatorEnvelope = UIEnvelope(UIExpansion::Both, UIAlignme
 
 UIColumns midContents = UIColumns(&deskHeightIndicatorEnvelope, &midPopupMessageContent);
 UICards middleContentColumnCard = UICards(&midContents);
-
 UIEnvelope middleContentColumnCardEnvelope = UIEnvelope(UIExpansion::Both, UIAlignment::Center, &middleContentColumnCard, &footerColumnEnvelope);
+
+// ----- menu items
+
+// 16x16 icon | w x 16 text
+// 16x16 icon | w x 16 text
+// 16x16 icon | w x 16 text
+UITextLine menuSelectionItem3Text = UITextLine(u8g2_font_spleen6x12_mu, UIAlignment::CenterLeft);
+UITextIcon menuSelectionItem3TextIcon = UITextIcon(u8g2_font_open_iconic_arrow_1x_t, UISize(18, 16), &menuSelectionItem3Text);
+UIColumns menuSelectionItem3Column = UIColumns(&menuSelectionItem3TextIcon, &menuSelectionItem3Text);
+UIEnvelope menuSelectionItem3ColumnEnvelope = UIEnvelope(UIExpansion::Horizontal, UIAlignment::Center, &menuSelectionItem3Column);
+
+UITextLine menuSelectionItem2Text = UITextLine(u8g2_font_spleen6x12_mu, UIAlignment::CenterLeft, &menuSelectionItem3ColumnEnvelope);
+UITextIcon menuSelectionItem2TextIcon = UITextIcon(u8g2_font_open_iconic_arrow_1x_t, UISize(18, 16), &menuSelectionItem2Text);
+UIColumns menuSelectionItem2Column = UIColumns(&menuSelectionItem2TextIcon, &menuSelectionItem2Text);
+UIEnvelope menuSelectionItem2ColumnEnvelope = UIEnvelope(UIExpansion::Horizontal, UIAlignment::Center, &menuSelectionItem2Column, &menuSelectionItem3ColumnEnvelope);
+
+UITextLine menuSelectionItem1Text = UITextLine(u8g2_font_spleen6x12_mu, UIAlignment::CenterLeft, &menuSelectionItem2ColumnEnvelope);
+UITextIcon menuSelectionItem1TextIcon = UITextIcon(u8g2_font_open_iconic_arrow_1x_t, UISize(18, 16), &menuSelectionItem1Text);
+UIColumns menuSelectionItem1Column = UIColumns(&menuSelectionItem1TextIcon, &menuSelectionItem1Text);
+UIEnvelope menuSelectionItem1ColumnEnvelope = UIEnvelope(UIExpansion::Horizontal, UIAlignment::Center, &menuSelectionItem1Column, &menuSelectionItem2ColumnEnvelope);
+
+UIRows menuSelectionItemRows = UIRows(&menuSelectionItem1ColumnEnvelope);
+UIEnvelope menuSelectionItemRowsEnvelope = UIEnvelope(UIExpansion::Both, UIAlignment::BottomLeft, &menuSelectionItemRows);
+
+UICards menuSelectionItemsStacker = UICards(&menuSelectionItemRowsEnvelope);
+
+UIRows cardStackerContents = UIRows(&middleContentColumnCardEnvelope, &menuSelectionItemRowsEnvelope);
+UICards cardStacker = UICards(&cardStackerContents);
+UIEnvelope cardStackerEnvelope = UIEnvelope(UIExpansion::Both, UIAlignment::Center, &cardStacker);
+
 // ----- HEADER -----
-UIHorizontalLine headerHorizontalLine = UIHorizontalLine(&middleContentColumnCardEnvelope);
+UIHorizontalLine headerHorizontalLine = UIHorizontalLine(&cardStackerEnvelope);
 UITextIcon headerRightIcon3 = UITextIcon(u8g2_font_open_iconic_www_1x_t, UISize(12, 12));
 UITextIcon headerRightIcon2 = UITextIcon(u8g2_font_open_iconic_www_1x_t, UISize(12, 12), &headerRightIcon3);
 UITextIcon headerRightIcon1 = UITextIcon(u8g2_font_open_iconic_thing_1x_t, UISize(12, 12), &headerRightIcon2);
@@ -225,6 +254,17 @@ void setupOledDisplay() {
 
     midPopupMessageText.setText(midPopupMessageTextStr);
     middleContentColumnCard.showFirstWidget();
+
+    menuSelectionItemsStacker.showFirstWidget();
+    cardStacker.setVisibleWidget(&menuSelectionItemRowsEnvelope);
+
+    menuSelectionItem1TextIcon.setText("\u0052");  // \u0050-> down hat // \u0051 back hat
+    menuSelectionItem2TextIcon.setText("");
+    menuSelectionItem3TextIcon.setText("");
+    menuSelectionItem1Text.setText("MEMORY");
+    // menuSelectionItem3Text.updateText();
+    menuSelectionItem2Text.setText("TIMER");
+    menuSelectionItem3Text.setText("SETTINGS");
     taskManager.scheduleFixedRate(50, [] {
         displayManager.render(&u8g2);
     });
