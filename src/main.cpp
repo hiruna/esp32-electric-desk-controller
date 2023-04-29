@@ -122,9 +122,54 @@ char uiLockIconStrVal[4] = "\u004F";
 bool uiLocked = true;
 bool midPopupMessageShown = false;
 
-UIWidgetGroup* prevMidContent = nullptr;
-UIWidgetGroup* currMidContent = nullptr;
+char menuSelectionItem1IconStr[3] = "";
+char menuSelectionItem2IconStr[3] = "";
+char menuSelectionItem3IconStr[3] = "";
+// UITextIcon menuSelectionItemUITextIcons[3] = {menuSelectionItem1TextIcon, menuSelectionItem2TextIcon, menuSelectionItem3TextIcon};
+int currentMenuSelectionItemIdx = 0;
 
+bool menuShown = false;
+bool mainScreenShown = false;
+void updateMenuItemSelectionIcon() {
+    switch (currentMenuSelectionItemIdx) {
+        case 0:
+            sprintf(menuSelectionItem1IconStr, "%s", "\u0052");  // TODO
+            sprintf(menuSelectionItem2IconStr, "%s", "");        // TODO
+            sprintf(menuSelectionItem3IconStr, "%s", "");        // TODO
+            break;
+        case 1:
+            sprintf(menuSelectionItem2IconStr, "%s", "\u0052");  // TODO
+            sprintf(menuSelectionItem1IconStr, "%s", "");        // TODO
+            sprintf(menuSelectionItem3IconStr, "%s", "");        // TODO
+            break;
+        case 2:
+            sprintf(menuSelectionItem3IconStr, "%s", "\u0052");  // TODO
+            sprintf(menuSelectionItem1IconStr, "%s", "");        // TODO
+            sprintf(menuSelectionItem2IconStr, "%s", "");        // TODO
+
+            break;
+        default:
+            break;
+    }
+    menuSelectionItem1TextIcon.updateText();
+    menuSelectionItem2TextIcon.updateText();
+    menuSelectionItem3TextIcon.updateText();
+}
+void displayMenu() {
+    cardStacker.setVisibleWidget(&menuSelectionItemRowsEnvelope);
+    menuSelectionItemsStacker.showFirstWidget();
+    currentMenuSelectionItemIdx = 0;
+    updateMenuItemSelectionIcon();
+    mainScreenShown = false;
+    menuShown = true;
+}
+
+void displayMainScreen() {
+    cardStacker.showFirstWidget();
+    middleContentColumnCard.showFirstWidget();
+    menuShown = false;
+    mainScreenShown = true;
+}
 void setMidPopupMessageText(const char* msg) {
     sprintf(midPopupMessageTextStr, "%s", msg);  // TODO
     midPopupMessageText.updateText();
@@ -197,10 +242,20 @@ void ctrlPanelEncoderStatusHandler() {
         if (uiLocked) {
             showUILockedMsg();
         } else {
-            long encVal = ctrlPanelEncoder.readEncoder();
-            sprintf(encValStr, "%03d", (int)encVal);
+            if (mainScreenShown) {
+                long encVal = ctrlPanelEncoder.readEncoder();
+                sprintf(encValStr, "%03d", (int)encVal);
 
-            deskHeightIndicatorValueText.updateText();
+                deskHeightIndicatorValueText.updateText();
+            } else if (menuShown) {
+                if (currentMenuSelectionItemIdx < 2) {
+                    currentMenuSelectionItemIdx++;
+
+                } else {
+                    currentMenuSelectionItemIdx = 0;
+                }
+                updateMenuItemSelectionIcon();
+            }
             // Serial.println(encValStr);
         }
     }
@@ -208,8 +263,11 @@ void ctrlPanelEncoderStatusHandler() {
     if (ctrlPanelEncoder.isEncoderButtonClicked()) {
         ctrlPanelEncoderOnBtnClick();
     }
+    if (ctrlPanelEncoder.isEncoderButtonClicked(2000)) {
+        toggleUILock();
+    }
     if (ctrlPanelEncoder.isEncoderButtonClicked(600)) {
-        ctrlPanelEncoderOnBtnHeldDown();
+        displayMenu();
     }
 }
 
@@ -253,14 +311,15 @@ void setupOledDisplay() {
     // footerIcon.updateText();
 
     midPopupMessageText.setText(midPopupMessageTextStr);
-    middleContentColumnCard.showFirstWidget();
+    displayMainScreen();
+    // middleContentColumnCard.showFirstWidget();
 
-    menuSelectionItemsStacker.showFirstWidget();
-    cardStacker.setVisibleWidget(&menuSelectionItemRowsEnvelope);
+    // menuSelectionItemsStacker.showFirstWidget();
+    // cardStacker.setVisibleWidget(&menuSelectionItemRowsEnvelope);
 
-    menuSelectionItem1TextIcon.setText("\u0052");  // \u0050-> down hat // \u0051 back hat
-    menuSelectionItem2TextIcon.setText("");
-    menuSelectionItem3TextIcon.setText("");
+    menuSelectionItem1TextIcon.setText(menuSelectionItem1IconStr);  // ("\u0052");  // \u0050-> down hat // \u0051 back hat
+    menuSelectionItem2TextIcon.setText(menuSelectionItem2IconStr);
+    menuSelectionItem3TextIcon.setText(menuSelectionItem3IconStr);
     menuSelectionItem1Text.setText("MEMORY");
     // menuSelectionItem3Text.updateText();
     menuSelectionItem2Text.setText("TIMER");
