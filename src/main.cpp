@@ -63,7 +63,7 @@ UIColumns midContents = UIColumns(&deskHeightIndicatorEnvelope, &midPopupMessage
 UICards middleContentColumnCard = UICards(&midContents);
 UIEnvelope middleContentColumnCardEnvelope = UIEnvelope(UIExpansion::Both, UIAlignment::Center, &middleContentColumnCard, &footerColumnEnvelope);
 
-// ----- menu items
+// ----- menu items list -----
 
 // 16x16 icon | w x 16 text
 // 16x16 icon | w x 16 text
@@ -86,9 +86,30 @@ UIEnvelope menuSelectionItem1ColumnEnvelope = UIEnvelope(UIExpansion::Horizontal
 UIRows menuSelectionItemRows = UIRows(&menuSelectionItem1ColumnEnvelope);
 UIEnvelope menuSelectionItemRowsEnvelope = UIEnvelope(UIExpansion::Both, UIAlignment::BottomLeft, &menuSelectionItemRows);
 
-UICards menuSelectionItemsStacker = UICards(&menuSelectionItemRowsEnvelope);
+// ----- memory menu item contents -----
+UITextLine memorySelectionItem3Text = UITextLine(u8g2_font_UnnamedDOSFontIV_tr, UIAlignment::CenterLeft);
+UITextIcon memorySelectionItem3TextIcon = UITextIcon(u8g2_font_open_iconic_arrow_1x_t, UISize(18, 16), &memorySelectionItem3Text);
+UIColumns memorySelectionItem3Column = UIColumns(&memorySelectionItem3TextIcon, &menuSelectionItem3Text);
+UIEnvelope memorySelectionItem3ColumnEnvelope = UIEnvelope(UIExpansion::Horizontal, UIAlignment::Center, &memorySelectionItem3Column);
 
-UIRows cardStackerContents = UIRows(&middleContentColumnCardEnvelope, &menuSelectionItemRowsEnvelope);
+UITextLine memorySelectionItem2Text = UITextLine(u8g2_font_UnnamedDOSFontIV_tr, UIAlignment::CenterLeft, &memorySelectionItem3ColumnEnvelope);
+UITextIcon memorySelectionItem2TextIcon = UITextIcon(u8g2_font_open_iconic_arrow_1x_t, UISize(18, 16), &memorySelectionItem2Text);
+UIColumns memorySelectionItem2Column = UIColumns(&memorySelectionItem2TextIcon, &menuSelectionItem2Text);
+UIEnvelope memorySelectionItem2ColumnEnvelope = UIEnvelope(UIExpansion::Horizontal, UIAlignment::Center, &memorySelectionItem2Column, &memorySelectionItem3ColumnEnvelope);
+
+UITextLine memorySelectionItem1Text = UITextLine(u8g2_font_UnnamedDOSFontIV_tr, UIAlignment::CenterLeft, &memorySelectionItem2ColumnEnvelope);
+UITextIcon memorySelectionItem1TextIcon = UITextIcon(u8g2_font_open_iconic_arrow_1x_t, UISize(18, 16), &memorySelectionItem1Text);
+UIColumns memorySelectionItem1Column = UIColumns(&memorySelectionItem1TextIcon, &menuSelectionItem1Text);
+UIEnvelope memorySelectionItem1ColumnEnvelope = UIEnvelope(UIExpansion::Horizontal, UIAlignment::Center, &memorySelectionItem1Column, &memorySelectionItem2ColumnEnvelope);
+
+UIRows memorySelectionItemRows = UIRows(&memorySelectionItem1ColumnEnvelope);
+UIEnvelope memorySelectionItemRowsEnvelope = UIEnvelope(UIExpansion::Both, UIAlignment::BottomLeft, &memorySelectionItemRows);
+
+UIColumns menuContents = UIColumns(&menuSelectionItemRowsEnvelope, &memorySelectionItemRowsEnvelope);
+
+UICards menuCardStacker = UICards(&menuContents);
+
+UIRows cardStackerContents = UIRows(&middleContentColumnCardEnvelope, &menuCardStacker);
 UICards cardStacker = UICards(&cardStackerContents);
 UIEnvelope cardStackerEnvelope = UIEnvelope(UIExpansion::Both, UIAlignment::Center, &cardStacker);
 
@@ -119,7 +140,7 @@ char encValStr[5] = "120";
 char deskHeightIndicatorUnitsStr[4] = "cm";
 
 char uiLockIconStrVal[4] = "\u004F";
-bool uiLocked = true;
+bool uiLocked = false;
 bool midPopupMessageShown = false;
 
 char menuSelectionItem1IconStr[3] = "";
@@ -129,8 +150,12 @@ char menuSelectionItem3IconStr[3] = "";
 int currentMenuSelectionItemIdx = 0;
 
 bool menuShown = false;
+bool memoryMenuShown = false;
+bool timerMenuShown = false;
+bool settingsMenuShown = false;
 bool mainScreenShown = false;
-void updateMenuItemSelectionIcon() {
+
+void updateMenuItemSelectionIconStr() {
     switch (currentMenuSelectionItemIdx) {
         case 0:
             sprintf(menuSelectionItem1IconStr, "%s", "\u0052");  // TODO
@@ -151,17 +176,40 @@ void updateMenuItemSelectionIcon() {
         default:
             break;
     }
+}
+
+void updateMenuItemSelectionIcons() {
     menuSelectionItem1TextIcon.updateText();
     menuSelectionItem2TextIcon.updateText();
     menuSelectionItem3TextIcon.updateText();
 }
+
+void updateMemorySelectionIcons() {
+    memorySelectionItem1TextIcon.updateText();
+    memorySelectionItem2TextIcon.updateText();
+    memorySelectionItem3TextIcon.updateText();
+}
+
 void displayMenu() {
-    cardStacker.setVisibleWidget(&menuSelectionItemRowsEnvelope);
-    menuSelectionItemsStacker.showFirstWidget();
+    cardStacker.setVisibleWidget(&menuCardStacker);
+    menuCardStacker.showFirstWidget();
     currentMenuSelectionItemIdx = 0;
-    updateMenuItemSelectionIcon();
+    updateMenuItemSelectionIconStr();
+    updateMenuItemSelectionIcons();
     mainScreenShown = false;
     menuShown = true;
+    memoryMenuShown = false;
+}
+
+void displayMemoryMenu() {
+    cardStacker.setVisibleWidget(&menuCardStacker);
+    menuCardStacker.setVisibleWidget(&memorySelectionItemRowsEnvelope);
+    currentMenuSelectionItemIdx = 0;
+    updateMenuItemSelectionIconStr();
+    updateMemorySelectionIcons();
+    mainScreenShown = false;
+    menuShown = true;
+    memoryMenuShown = true;
 }
 
 void displayMainScreen() {
@@ -169,6 +217,25 @@ void displayMainScreen() {
     middleContentColumnCard.showFirstWidget();
     menuShown = false;
     mainScreenShown = true;
+    memoryMenuShown = false;
+}
+
+void handleMenuSelectionClick() {
+    switch (currentMenuSelectionItemIdx) {
+        case 0:
+            if (!memoryMenuShown && !timerMenuShown && !settingsMenuShown) {  // - On menu selctions
+                displayMemoryMenu();
+            }
+            break;
+        case 1:
+            // TODO
+            break;
+        case 2:
+            // TODO
+            break;
+        default:
+            break;
+    }
 }
 void setMidPopupMessageText(const char* msg) {
     sprintf(midPopupMessageTextStr, "%s", msg);  // TODO
@@ -230,6 +297,9 @@ void toggleUILock() {
 */
 void ctrlPanelEncoderOnBtnClick() {
     Serial.println("ctrlPanelEncoderOnBtnClick");
+    if (menuShown) {
+        handleMenuSelectionClick();
+    }
 }
 
 void ctrlPanelEncoderOnBtnHeldDown() {
@@ -254,7 +324,12 @@ void ctrlPanelEncoderStatusHandler() {
                 } else {
                     currentMenuSelectionItemIdx = 0;
                 }
-                updateMenuItemSelectionIcon();
+                updateMenuItemSelectionIconStr();
+                if (memoryMenuShown) {
+                    updateMemorySelectionIcons();
+                } else {
+                    updateMenuItemSelectionIcons();
+                }
             }
             // Serial.println(encValStr);
         }
@@ -318,9 +393,10 @@ void setupOledDisplay() {
 
     midPopupMessageText.setText(midPopupMessageTextStr);
     displayMainScreen();
+    // displayMemoryMenu();
     // middleContentColumnCard.showFirstWidget();
 
-    // menuSelectionItemsStacker.showFirstWidget();
+    // menuCardStacker.showFirstWidget();
     // cardStacker.setVisibleWidget(&menuSelectionItemRowsEnvelope);
 
     menuSelectionItem1TextIcon.setText(menuSelectionItem1IconStr);  // ("\u0052");  // \u0050-> down hat // \u0051 back hat
@@ -330,6 +406,14 @@ void setupOledDisplay() {
     // menuSelectionItem3Text.updateText();
     menuSelectionItem2Text.setText("TIMER");
     menuSelectionItem3Text.setText("SETTINGS");
+
+    memorySelectionItem1TextIcon.setText(menuSelectionItem1IconStr);
+    memorySelectionItem1Text.setText("\u004D\u0031");
+    memorySelectionItem2TextIcon.setText(menuSelectionItem2IconStr);
+    memorySelectionItem2Text.setText("\u004D\u0032");
+    memorySelectionItem3TextIcon.setText(menuSelectionItem3IconStr);
+    memorySelectionItem3Text.setText("\u004D\u0033");
+
     taskManager.scheduleFixedRate(50, [] {
         displayManager.render(&u8g2);
     });
