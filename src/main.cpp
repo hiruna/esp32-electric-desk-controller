@@ -262,12 +262,18 @@ void ctrlPanelEncoderStatusHandler() {
 
     if (ctrlPanelEncoder.isEncoderButtonClicked()) {
         ctrlPanelEncoderOnBtnClick();
-    }
-    if (ctrlPanelEncoder.isEncoderButtonClicked(2000)) {
-        toggleUILock();
-    }
-    if (ctrlPanelEncoder.isEncoderButtonClicked(600)) {
-        displayMenu();
+    } else if (ctrlPanelEncoder.isEncoderButtonClicked(2000)) {
+        if (uiLocked) {
+            showUILockedMsg();
+        } else if (mainScreenShown) {  // if main screen shown and ui not locked
+            displayMenu();
+        } else {  // otherwise return to main screen
+            displayMainScreen();
+        }
+    } else if (ctrlPanelEncoder.isEncoderButtonClicked(3000)) {
+        if (mainScreenShown) {  // lock/unlock only if main screen is shown
+            toggleUILock();
+        }
     }
 }
 
