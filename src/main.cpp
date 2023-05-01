@@ -116,7 +116,7 @@ UIEnvelope cardStackerEnvelope = UIEnvelope(UIExpansion::Both, UIAlignment::Cent
 // ----- HEADER -----
 UIHorizontalLine headerHorizontalLine = UIHorizontalLine(&cardStackerEnvelope);
 UITextIcon headerRightIcon3 = UITextIcon(u8g2_font_open_iconic_www_1x_t, UISize(12, 12));
-UITextIcon headerRightIcon2 = UITextIcon(u8g2_font_open_iconic_www_1x_t, UISize(12, 12), &headerRightIcon3);
+UITextIcon headerRightIcon2 = UITextIcon(u8g2_font_nokiafc22_tf, UISize(12, 12), &headerRightIcon3);
 UITextIcon headerRightIcon1 = UITextIcon(u8g2_font_open_iconic_thing_1x_t, UISize(12, 12), &headerRightIcon2);
 UIColumns headerIconsColumn = UIColumns(&headerRightIcon1);
 UIEnvelope headerIconsColumnEnvelope = UIEnvelope(UIExpansion::Horizontal, UIAlignment::CenterRight, &headerIconsColumn);
@@ -146,14 +146,22 @@ bool midPopupMessageShown = false;
 char menuSelectionItem1IconStr[3] = "";
 char menuSelectionItem2IconStr[3] = "";
 char menuSelectionItem3IconStr[3] = "";
+
+char headerLeftIconStr[3] = "";
+char headerLeftTextStr[6] = "";
+
+char headerCenterTextStr[8] = "|";
+
 // UITextIcon menuSelectionItemUITextIcons[3] = {menuSelectionItem1TextIcon, menuSelectionItem2TextIcon, menuSelectionItem3TextIcon};
-int currentMenuSelectionItemIdx = 0;
+int currentMenuSelectionItemIdx = -1;
 
 bool menuShown = false;
 bool memoryMenuShown = false;
 bool timerMenuShown = false;
 bool settingsMenuShown = false;
 bool mainScreenShown = false;
+
+int selectedMemorySettingIdx = -1;
 
 void updateMenuItemSelectionIconStr() {
     switch (currentMenuSelectionItemIdx) {
@@ -190,12 +198,38 @@ void updateMemorySelectionIcons() {
     memorySelectionItem3TextIcon.updateText();
 }
 
+void setHeaderCenterText(const char* txt) {
+    sprintf(headerCenterTextStr, "%s", txt);  // TODO
+    headerCenterText.updateText();
+}
+
+void hideHeaderLeft() {
+    headerLeftIcon.clearText();
+    headerLeftText.clearText();
+}
+
+void showHeaderLeft() {
+    headerLeftIcon.setText(headerLeftIconStr);
+    headerLeftText.setText(headerLeftTextStr);
+    headerLeftIcon.updateText();
+    headerLeftText.updateText();
+}
+
+void setHeaderLeft(const char* iconStr, const char* textStr) {
+    sprintf(headerLeftIconStr, "%s", iconStr);
+    sprintf(headerLeftTextStr, "%s", textStr);
+    headerLeftIcon.updateText();
+    headerLeftText.updateText();
+}
+
 void displayMenu() {
     cardStacker.setVisibleWidget(&menuCardStacker);
     menuCardStacker.showFirstWidget();
     currentMenuSelectionItemIdx = 0;
     updateMenuItemSelectionIconStr();
     updateMenuItemSelectionIcons();
+    hideHeaderLeft();
+    setHeaderCenterText("MENU");
     mainScreenShown = false;
     menuShown = true;
     memoryMenuShown = false;
@@ -207,6 +241,9 @@ void displayMemoryMenu() {
     currentMenuSelectionItemIdx = 0;
     updateMenuItemSelectionIconStr();
     updateMemorySelectionIcons();
+    hideHeaderLeft();
+    setHeaderCenterText("MEMORY");
+
     mainScreenShown = false;
     menuShown = true;
     memoryMenuShown = true;
@@ -215,26 +252,35 @@ void displayMemoryMenu() {
 void displayMainScreen() {
     cardStacker.showFirstWidget();
     middleContentColumnCard.showFirstWidget();
+    setHeaderCenterText("|");
+    showHeaderLeft();
     menuShown = false;
     mainScreenShown = true;
     memoryMenuShown = false;
 }
 
-void handleMenuSelectionClick() {
-    switch (currentMenuSelectionItemIdx) {
+void displayMenuScreenAtIdx(int menuScreenIdx) {
+    switch (menuScreenIdx) {
         case 0:
-            if (!memoryMenuShown && !timerMenuShown && !settingsMenuShown) {  // - On menu selctions
-                displayMemoryMenu();
-            }
+            displayMemoryMenu();
             break;
         case 1:
-            // TODO
             break;
         case 2:
-            // TODO
             break;
         default:
             break;
+    }
+}
+
+void handleMenuSelectionClick() {
+    if (!memoryMenuShown && !timerMenuShown && !settingsMenuShown) {  // - On menu selctions
+        displayMenuScreenAtIdx(currentMenuSelectionItemIdx);
+    } else if (memoryMenuShown) {  // - On memory
+        // idx is chosen mem setting
+        selectedMemorySettingIdx = currentMenuSelectionItemIdx;
+        // TODO -
+        displayMainScreen();
     }
 }
 void setMidPopupMessageText(const char* msg) {
@@ -244,9 +290,11 @@ void setMidPopupMessageText(const char* msg) {
 void displayMidPopupMessage(const char* msg, uint32_t durationMillis) {
     setMidPopupMessageText(msg);
     taskManager.scheduleOnce(100, [] {
+        cardStacker.showFirstWidget();
         middleContentColumnCard.setVisibleWidget(&midPopupMessageContent);
     });
     taskManager.scheduleOnce(durationMillis, [] {
+        cardStacker.showPreviousVisibleWidget();
         middleContentColumnCard.showPreviousVisibleWidget();
         midPopupMessageShown = false;
     });
@@ -295,6 +343,10 @@ void toggleUILock() {
 
 
 */
+
+void handleStoreMemory() {
+    displayMidPopupMessage("STORED", 1000);
+}
 void ctrlPanelEncoderOnBtnClick() {
     Serial.println("ctrlPanelEncoderOnBtnClick");
     if (menuShown) {
@@ -342,6 +394,8 @@ void ctrlPanelEncoderStatusHandler() {
             showUILockedMsg();
         } else if (mainScreenShown) {  // if main screen shown and ui not locked
             displayMenu();
+        } else if (memoryMenuShown) {
+            handleStoreMemory();
         } else {  // otherwise return to main screen
             displayMainScreen();
         }
@@ -382,11 +436,11 @@ void setupOledDisplay() {
 
     clickIndicatorIcon.setText("\u0047");
     headerRightIcon3.setText("\u0048");
-    headerRightIcon2.setText("\u0044");
+    // headerRightIcon2.setText("\u0044");
+    headerRightIcon2.setText("");
     headerRightIcon1.setText(uiLockIconStrVal);
-    headerCenterText.setText("|");
-    headerLeftText.setText("02:25");
-    headerLeftIcon.setText(icon_8x8_timer);
+    headerCenterText.setText(headerCenterTextStr);
+    setHeaderLeft(icon_8x8_timer, "02:25");
     footerIcon.setText("\u005D");              // \u005D bell
     footerText.setText(" Stand-up reminder");  // len 17 is max, -1 for space padding from icon
     // footerIcon.updateText();
