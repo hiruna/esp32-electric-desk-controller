@@ -12,7 +12,8 @@
 #define CTRL_PANEL_ENCODER_BUTTON_PIN 14
 #define CTRL_PANEL_ENCODER_VCC_PIN -1
 #define CTRL_PANEL_ENCODER_STEPS 2
-
+#define CTRL_PANEL_ENCODER_MIN_VAL 120
+#define CTRL_PANEL_ENCODER_MAX_VAL 170
 const char* icon_8x8_padlock_opened = "\u0044";  // u8g2_font_open_iconic_thing_1x_t
 const char* icon_8x8_padlock_closed = "\u004F";  // u8g2_font_open_iconic_thing_1x_t
 const char* icon_8x8_wifi = "\u0048";            // u8g2_font_open_iconic_www_1x_t
@@ -21,7 +22,10 @@ const char* icon_8x8_up_arrow = "\u0070";           // u8g2_font_open_iconic_all
 const char* icon_8x8_down_arrow = "\u006D";         // u8g2_font_open_iconic_all_1x_t
 const char* icon_8x8_circle_center_dot = "\u0047";  // u8g2_font_open_iconic_other_1x_t
 
-const char* icon_8x8_bell = "\u005D";  // u8g2_font_open_iconic_all_1x_t
+const char* icon_8x8_shutter = "\u0047";          // u8g2_font_open_iconic_all_1x_t
+const char* icon_8x8_up_arrow_long = "\u0053";    // u8g2_font_open_iconic_all_1x_t
+const char* icon_8x8_down_arrow_long = "\u0048";  // u8g2_font_open_iconic_all_1x_t
+const char* icon_8x8_bell = "\u005D";             // u8g2_font_open_iconic_all_1x_t
 
 const char* icon_8x8_timer = "\u0048";  // u8g2_font_open_iconic_app_1x_t
 const char* icon_8x8_clock = "\u0045";  // u8g2_font_open_iconic_app_1x_t
@@ -46,7 +50,7 @@ UIColumns midPopupMessageContent = UIColumns(&midPopupMessageEnvelope);
 
 // ----- up/down indicator (right vertical) -----
 UITextIcon upDownIndicatorDownIcon = UITextIcon(u8g2_font_open_iconic_all_1x_t, UISize(16, 16));
-UITextIcon clickIndicatorIcon = UITextIcon(u8g2_font_open_iconic_other_1x_t, UISize(16, 8), &upDownIndicatorDownIcon);
+UITextIcon clickIndicatorIcon = UITextIcon(u8g2_font_open_iconic_all_1x_t, UISize(16, 8), &upDownIndicatorDownIcon);
 UITextIcon upDownIndicatorUpIcon = UITextIcon(u8g2_font_open_iconic_all_1x_t, UISize(16, 16), &clickIndicatorIcon);
 UIRows upDownIndicatorRow = UIRows(&upDownIndicatorUpIcon);
 UIEnvelope upDownIndicatorRowEnvelope = UIEnvelope(UIExpansion::Vertical, UIAlignment::CenterRight, &upDownIndicatorRow);
@@ -147,6 +151,10 @@ char menuSelectionItem1IconStr[3] = "";
 char menuSelectionItem2IconStr[3] = "";
 char menuSelectionItem3IconStr[3] = "";
 
+char upDownIndicatorUpIconStr[3] = "";
+char upDownIndicatorDownIconStr[3] = "";
+char clickIndicatorIconStr[3] = "";
+
 char headerLeftIconStr[3] = "";
 char headerLeftTextStr[6] = "";
 
@@ -162,6 +170,74 @@ bool settingsMenuShown = false;
 bool mainScreenShown = false;
 
 int selectedMemorySettingIdx = -1;
+
+long encLastVal = 0;
+long encValDiff = 0;
+long encVal = 0;
+int encDirection = 0;
+
+long lastDeskHeight = 0;
+long requestedDeskHeight = 0;
+long currentDeskHeight = 120;
+
+long deskStoredMemory[] = {-1, 150, -1};
+
+long lastCtrlPanelEncoderInteractionMillis = -1;
+taskid_t oledDimmerTaskId = -1;
+const uint8_t minOledContrast = 15;
+const uint8_t maxOledContrast = 255;
+uint8_t desiredOledContrast = 255;
+uint8_t currentOledContrast = 255;
+bool oledOn = true;
+// taskid_t ctrlPanelInactivityWatcherTaskId;
+
+void setCtrlPanelEncoderMenuItemSelectionBoundaries() {
+    ctrlPanelEncoder.setBoundaries(0, 2, false);
+    ctrlPanelEncoder.setEncoderValue(0);
+}
+void setCtrlPanelEncoderDeskHeightBoundaries() {
+    ctrlPanelEncoder.setBoundaries(CTRL_PANEL_ENCODER_MIN_VAL, CTRL_PANEL_ENCODER_MAX_VAL, false);
+    ctrlPanelEncoder.setEncoderValue(currentDeskHeight);
+}
+
+void hideUpDownIndicatorUpIcon() {
+    upDownIndicatorUpIcon.clearText();
+}
+void showUpDownIndicatorUpIcon() {
+    upDownIndicatorUpIcon.setText(upDownIndicatorUpIconStr);
+    upDownIndicatorUpIcon.updateText();
+}
+
+void setUpDownIndicatorUpIconStr(const char* txt) {
+    sprintf(upDownIndicatorUpIconStr, "%s", txt);
+    upDownIndicatorUpIcon.updateText();
+}
+
+void hideUpDownIndicatorDownIcon() {
+    upDownIndicatorDownIcon.clearText();
+}
+void showUpDownIndicatorDownIcon() {
+    upDownIndicatorDownIcon.setText(upDownIndicatorDownIconStr);
+    upDownIndicatorDownIcon.updateText();
+}
+
+void setUpDownIndicatorDownIconStr(const char* txt) {
+    sprintf(upDownIndicatorDownIconStr, "%s", txt);
+    upDownIndicatorDownIcon.updateText();
+}
+
+void hideClickIndicatorIcon() {
+    clickIndicatorIcon.clearText();
+}
+void showClickIndicatorIcon() {
+    clickIndicatorIcon.setText(clickIndicatorIconStr);
+    clickIndicatorIcon.updateText();
+}
+
+void setClickIndicatorIconStr(const char* txt) {
+    sprintf(clickIndicatorIconStr, "%s", txt);
+    clickIndicatorIcon.updateText();
+}
 
 void updateMenuItemSelectionIconStr() {
     switch (currentMenuSelectionItemIdx) {
@@ -223,6 +299,7 @@ void setHeaderLeft(const char* iconStr, const char* textStr) {
 }
 
 void displayMenu() {
+    setCtrlPanelEncoderMenuItemSelectionBoundaries();
     cardStacker.setVisibleWidget(&menuCardStacker);
     menuCardStacker.showFirstWidget();
     currentMenuSelectionItemIdx = 0;
@@ -236,6 +313,7 @@ void displayMenu() {
 }
 
 void displayMemoryMenu() {
+    setCtrlPanelEncoderMenuItemSelectionBoundaries();
     cardStacker.setVisibleWidget(&menuCardStacker);
     menuCardStacker.setVisibleWidget(&memorySelectionItemRowsEnvelope);
     currentMenuSelectionItemIdx = 0;
@@ -249,10 +327,21 @@ void displayMemoryMenu() {
     memoryMenuShown = true;
 }
 
+void setDefaultUpDownIndicatorIcons() {
+    setUpDownIndicatorUpIconStr(icon_8x8_up_arrow);
+    setUpDownIndicatorDownIconStr(icon_8x8_down_arrow);
+    setClickIndicatorIconStr(icon_8x8_shutter);
+    showUpDownIndicatorUpIcon();
+    showUpDownIndicatorDownIcon();
+    showClickIndicatorIcon();
+}
 void displayMainScreen() {
+    setCtrlPanelEncoderDeskHeightBoundaries();
     cardStacker.showFirstWidget();
     middleContentColumnCard.showFirstWidget();
+    menuCardStacker.showFirstWidget();
     setHeaderCenterText("|");
+    setDefaultUpDownIndicatorIcons();
     showHeaderLeft();
     menuShown = false;
     mainScreenShown = true;
@@ -273,16 +362,6 @@ void displayMenuScreenAtIdx(int menuScreenIdx) {
     }
 }
 
-void handleMenuSelectionClick() {
-    if (!memoryMenuShown && !timerMenuShown && !settingsMenuShown) {  // - On menu selctions
-        displayMenuScreenAtIdx(currentMenuSelectionItemIdx);
-    } else if (memoryMenuShown) {  // - On memory
-        // idx is chosen mem setting
-        selectedMemorySettingIdx = currentMenuSelectionItemIdx;
-        // TODO -
-        displayMainScreen();
-    }
-}
 void setMidPopupMessageText(const char* msg) {
     sprintf(midPopupMessageTextStr, "%s", msg);  // TODO
     midPopupMessageText.updateText();
@@ -291,37 +370,53 @@ void displayMidPopupMessage(const char* msg, uint32_t durationMillis) {
     setMidPopupMessageText(msg);
     taskManager.scheduleOnce(100, [] {
         cardStacker.showFirstWidget();
+
+        Serial.println("100, setting middleContentColumnCard to mid popup");
         middleContentColumnCard.setVisibleWidget(&midPopupMessageContent);
+        midPopupMessageShown = true;
     });
     taskManager.scheduleOnce(durationMillis, [] {
         cardStacker.showPreviousVisibleWidget();
+
         middleContentColumnCard.showPreviousVisibleWidget();
         midPopupMessageShown = false;
     });
 }
 void showUILockedMsg() {
     if (!midPopupMessageShown) {
-        midPopupMessageShown = true;
         displayMidPopupMessage("LOCKED", 1500);
     }
 }
 
 void showUIUnlockedMsg() {
     if (!midPopupMessageShown) {
-        midPopupMessageShown = true;
         displayMidPopupMessage("UNLOCKED", 1500);
     }
 }
-void toggleUILock() {
-    uiLocked = !uiLocked;
-    if (uiLocked) {
+
+void lockUI() {
+    if (!uiLocked) {
+        uiLocked = true;
         sprintf(uiLockIconStrVal, "%s", icon_8x8_padlock_closed);  // TODO
+        headerRightIcon1.updateText();
         showUILockedMsg();
-    } else {
+    }
+}
+
+void unlockUI() {
+    if (uiLocked) {
+        uiLocked = false;
         sprintf(uiLockIconStrVal, "%s", icon_8x8_padlock_opened);  // TODO
+        headerRightIcon1.updateText();
         showUIUnlockedMsg();
     }
-    headerRightIcon1.updateText();
+}
+void toggleUILock() {
+    if (uiLocked) {
+        unlockUI();
+    } else {
+        lockUI();
+    }
 }
 /*
     // example from AiEsp32RotaryEncoder
@@ -347,9 +442,47 @@ void toggleUILock() {
 void handleStoreMemory() {
     displayMidPopupMessage("STORED", 1000);
 }
+taskid_t mockDeskHeightIncrease() {
+    return taskManager.scheduleFixedRate(300, [] {
+        hideUpDownIndicatorUpIcon();
+        hideUpDownIndicatorDownIcon();
+        setClickIndicatorIconStr(icon_8x8_up_arrow_long);
+        if (currentDeskHeight < deskStoredMemory[selectedMemorySettingIdx]) {
+            currentDeskHeight++;
+            sprintf(encValStr, "%03d", (int)currentDeskHeight);
+            deskHeightIndicatorValueText.updateText();
+        }
+    });
+}
+taskid_t mockDeskHeightIncreaseTaskId;
+void handleMemorySelectionClick() {
+    if (deskStoredMemory[currentMenuSelectionItemIdx] == -1) {
+        displayMidPopupMessage("NOT SET", 1000);
+    } else {
+        selectedMemorySettingIdx = currentMenuSelectionItemIdx;
+        // TODO -
+        displayMainScreen();
+        mockDeskHeightIncreaseTaskId = mockDeskHeightIncrease();
+        taskManager.scheduleOnce(15000, [] {
+            taskManager.cancelTask(mockDeskHeightIncreaseTaskId);
+            setDefaultUpDownIndicatorIcons();
+        });
+    }
+}
+
+void handleMenuSelectionClick() {
+    if (!memoryMenuShown && !timerMenuShown && !settingsMenuShown) {  // - On menu selctions
+        displayMenuScreenAtIdx(currentMenuSelectionItemIdx);
+    } else if (memoryMenuShown) {  // - On memory
+        // idx is chosen mem setting
+        handleMemorySelectionClick();
+    }
+}
 void ctrlPanelEncoderOnBtnClick() {
     Serial.println("ctrlPanelEncoderOnBtnClick");
-    if (menuShown) {
+    if (mainScreenShown) {  // lock/unlock only if main screen is shown
+        toggleUILock();
+    } else if (menuShown) {
         handleMenuSelectionClick();
     }
 }
@@ -359,23 +492,86 @@ void ctrlPanelEncoderOnBtnHeldDown() {
     toggleUILock();
 }
 
+void setOledContrast(uint8_t contrastVal) {
+    if (contrastVal >= 255) {
+        currentOledContrast = 255;
+    } else if (contrastVal <= 0) {
+        currentOledContrast = 0;
+    } else {
+        currentOledContrast = contrastVal;
+    }
+    u8g2.setContrast(currentOledContrast);
+}
+void turnOffOled() {
+    if (oledOn) {
+        oledOn = false;
+        displayManager.disable(&u8g2);
+    }
+}
+
+void turnOnOled() {
+    if (!oledOn) {
+        oledOn = true;
+        displayManager.enable(&u8g2, true, true);
+    }
+}
+
+void dimOled(uint8_t reduceVal) {
+    currentOledContrast = currentOledContrast - reduceVal;
+    setOledContrast(currentOledContrast);
+}
+bool isCtrlPanelEncoderInactive() {
+    return (millis() - lastCtrlPanelEncoderInteractionMillis) > 10000;
+}
+void startCtrlPanelDimmer() {
+    oledDimmerTaskId = taskManager.scheduleFixedRate(1000, [] {
+        if (currentOledContrast > minOledContrast) {
+            dimOled(5);
+        } else {
+            turnOffOled();
+        }
+    });
+}
+
 void ctrlPanelEncoderStatusHandler() {
-    if (ctrlPanelEncoder.encoderChanged()) {
+    if (isCtrlPanelEncoderInactive()) {
+        if (currentOledContrast == desiredOledContrast) {
+            lockUI();
+            startCtrlPanelDimmer();
+        }
+    } else {
+        taskManager.scheduleOnce(100, [] {
+            taskManager.cancelTask(oledDimmerTaskId);
+        });
+        if (currentOledContrast != desiredOledContrast) {
+            turnOnOled();
+            setOledContrast(desiredOledContrast);
+        }
+    }
+    encValDiff = ctrlPanelEncoder.encoderChanged();
+    if (encValDiff) {
+        lastCtrlPanelEncoderInteractionMillis = millis();
+        encVal = ctrlPanelEncoder.readEncoder();
+        encLastVal = encVal + encValDiff;
+
+        if (encValDiff < 0) {
+            encDirection = -1;
+        } else if (encValDiff > 0) {
+            encDirection = 1;
+        } else {
+            encDirection = 0;
+        }
+        Serial.println(encVal);
         if (uiLocked) {
             showUILockedMsg();
         } else {
             if (mainScreenShown) {
-                long encVal = ctrlPanelEncoder.readEncoder();
                 sprintf(encValStr, "%03d", (int)encVal);
-
+                // sprintf(encValStr, "%d | %d", (int)encLastVal, (int)encValDiff);
+                Serial.println(encValStr);
                 deskHeightIndicatorValueText.updateText();
             } else if (menuShown) {
-                if (currentMenuSelectionItemIdx < 2) {
-                    currentMenuSelectionItemIdx++;
-
-                } else {
-                    currentMenuSelectionItemIdx = 0;
-                }
+                currentMenuSelectionItemIdx = encVal;
                 updateMenuItemSelectionIconStr();
                 if (memoryMenuShown) {
                     updateMemorySelectionIcons();
@@ -388,8 +584,10 @@ void ctrlPanelEncoderStatusHandler() {
     }
 
     if (ctrlPanelEncoder.isEncoderButtonClicked()) {
+        lastCtrlPanelEncoderInteractionMillis = millis();
         ctrlPanelEncoderOnBtnClick();
     } else if (ctrlPanelEncoder.isEncoderButtonClicked(2000)) {
+        lastCtrlPanelEncoderInteractionMillis = millis();
         if (uiLocked) {
             showUILockedMsg();
         } else if (mainScreenShown) {  // if main screen shown and ui not locked
@@ -399,28 +597,41 @@ void ctrlPanelEncoderStatusHandler() {
         } else {  // otherwise return to main screen
             displayMainScreen();
         }
-    } else if (ctrlPanelEncoder.isEncoderButtonClicked(3000)) {
-        if (mainScreenShown) {  // lock/unlock only if main screen is shown
-            toggleUILock();
-        }
     }
+    //  else if (ctrlPanelEncoder.isEncoderButtonClicked(3000)) {
+    // }
 }
 
 void IRAM_ATTR readEncoderISR() {
     ctrlPanelEncoder.readEncoder_ISR();
 }
 
+// void startCtrlPanelInactivityWatcher() {
+//     ctrlPanelInactivityWatcherTaskId = taskManager.scheduleFixedRate(1000, [] {
+//         // if (isCtrlPanelEncoderInactive()) {
+//         //     Serial.println("ctrl panel inactive");
+//         //     startCtrlPanelDimmer();
+//         // } else {
+//         //     taskManager.cancelTask(oledDimmerTaskId);
+//         //     if (currentOledContrast != desiredOledContrast) {
+//         //         setOledContrast(desiredOledContrast);
+//         //     }
+//         // }
+//     });
+// }
+
 void setupCtrlPanelEncoder() {
-    pinMode(CTRL_PANEL_ENCODER_A_PIN, INPUT_PULLUP);
-    pinMode(CTRL_PANEL_ENCODER_A_PIN, INPUT_PULLUP);
+    // pinMode(CTRL_PANEL_ENCODER_A_PIN, INPUT_PULLUP);
+    // pinMode(CTRL_PANEL_ENCODER_B_PIN, INPUT_PULLUP);
+    pinMode(CTRL_PANEL_ENCODER_A_PIN, INPUT);
+    pinMode(CTRL_PANEL_ENCODER_B_PIN, INPUT);
     ctrlPanelEncoder.begin();
     ctrlPanelEncoder.setup(readEncoderISR);
-    bool circleValues = true;
-    ctrlPanelEncoder.setBoundaries(0, 1000, circleValues);
-
+    setCtrlPanelEncoderDeskHeightBoundaries();
     taskManager.scheduleFixedRate(50, [] {
         ctrlPanelEncoderStatusHandler();
     });
+    // startCtrlPanelInactivityWatcher();
 }
 
 void setupOledDisplay() {
@@ -431,10 +642,10 @@ void setupOledDisplay() {
     deskHeightIndicatorValueText.setText(encValStr);
     deskHeightIndicatorUnitsText.setText(deskHeightIndicatorUnitsStr);
 
-    upDownIndicatorUpIcon.setText("\u0070");
-    upDownIndicatorDownIcon.setText("\u006D");
+    upDownIndicatorUpIcon.setText(upDownIndicatorUpIconStr);
+    upDownIndicatorDownIcon.setText(upDownIndicatorDownIconStr);
+    clickIndicatorIcon.setText(clickIndicatorIconStr);
 
-    clickIndicatorIcon.setText("\u0047");
     headerRightIcon3.setText("\u0048");
     // headerRightIcon2.setText("\u0044");
     headerRightIcon2.setText("");
