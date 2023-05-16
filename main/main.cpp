@@ -58,6 +58,9 @@ static const float MM_PER_MOTOR_ENC_COUNT = 0.136;  // 1 pulse count ~ 0.136mm
 int MOTOR_ENC_LOOP_PERIOD_MS = 10;  // calculate the motor speed every 10ms
 int MOTOR_EXPECTED_SPEED_RPM = 50;
 
+int MOTOR_EXPECTED_SPEED = 0;
+static bool motor_speed_slowed = false;
+
 typedef struct {
     bdc_motor_handle_t motor;
     pcnt_unit_handle_t pcnt_encoder;
@@ -112,13 +115,52 @@ int get_motor_driver_i_sens_rev_adc_raw() {
     return adc_raw;
 }
 
+void enable_motor_driver() {
+    // if (gpio_get_level(GPIO_MOTOR_DRIVER_ENABLE) == 0) {
+    ESP_LOGI(TAG, "enable_motor_driver");
+    gpio_set_level(GPIO_MOTOR_DRIVER_ENABLE, 1);
+    //}
+}
+
+void disable_motor_driver() {
+    // if (gpio_get_level(GPIO_MOTOR_DRIVER_ENABLE) == 1) {
+    ESP_LOGI(TAG, "disable_motor_driver");
+    gpio_set_level(GPIO_MOTOR_DRIVER_ENABLE, 0);
+    // }
+}
+
 static void motor_enc_loop_cp(void* args) {
     motor_control_context_t* ctx = (motor_control_context_t*)args;
     bdc_motor_handle_t motor = ctx->motor;
-
+    if (!motor_speed_slowed) {
+        bdc_motor_set_speed(motor, MOTOR_EXPECTED_SPEED);
+    }
     static int cur_pulse_count = 0;
     int64_t cur_pulse_count_time_ms = esp_timer_get_time() / 1000;
     pcnt_unit_get_count(ctx->pcnt_encoder, &cur_pulse_count);
+
+    int motor_driver_i_sense_fwd_adc_raw = get_motor_driver_i_sens_fwd_adc_raw();
+    int motor_driver_i_sense_rev_adc_raw = get_motor_driver_i_sens_rev_adc_raw();
+    if (cur_pulse_count < BDC_ENCODER_PCNT_LIMIT_OVERFLOW_STEP * 10 || cur_pulse_count > BDC_ENCODER_PCNT_HIGH_LIMIT - (BDC_ENCODER_PCNT_LIMIT_OVERFLOW_STEP * 10)) {
+        if (ctx->rpm < 0) {
+            bdc_motor_set_speed(motor, 95);
+            motor_speed_slowed = true;
+        } else if (ctx->rpm > 0) {
+            bdc_motor_set_speed(motor, 150);
+            motor_speed_slowed = true;
+        }
+
+    } else {
+        motor_speed_slowed = false;
+    }
+    if ((cur_pulse_count == BDC_ENCODER_PCNT_HIGH_LIMIT && ctx->rpm > 0)) {  //|| (motor_driver_i_sense_fwd_adc_raw > 1000 && ctx->rpm > 0)
+        ESP_LOGI(TAG, "fwd disable");
+        disable_motor_driver();
+    } else if ((cur_pulse_count <= 0 && ctx->rpm < 0) || (motor_driver_i_sense_rev_adc_raw > 1000 && ctx->rpm < 0)) {
+        ESP_LOGI(TAG, "rev disable");
+        disable_motor_driver();
+        pcnt_unit_clear_count(pcnt_unit);
+    }
 
     ctx->cur_pulse_count = cur_pulse_count;
     ctx->cur_pulse_count_time_ms = cur_pulse_count_time_ms;
@@ -133,26 +175,13 @@ static void motor_enc_loop_cp(void* args) {
         ctx->rpm /= MOTOR_ENC_LOOP_PERIOD_MS;
         // ESP_LOGI(TAG, "timeMillis=%lld,rpm=%f,set_speed=%f,prevCountTimeMillis=%lld,prevCount=%d,curCount=%d\n", cur_pulse_count_time_ms, rpm, set_speed, prev_pulse_count_time_ms, prev_pulse_count, cur_pulse_count);
         // printf("%lld %f %f %lld %d %d\n", cur_pulse_count_time_ms, rpm, set_speed, prev_pulse_count_time_ms, prev_pulse_count, cur_pulse_count);
-        ESP_LOGI(TAG, "cur_pulse_count_time_ms: %lld, cur_pulse_count: %d, rpm: %f, distance_mm: %f, i_sens_fwd_adc_raw: %d, i_sense_rev_adc_raw: %d\n", cur_pulse_count_time_ms, cur_pulse_count, ctx->rpm, ctx->distance_mm, get_motor_driver_i_sens_fwd_adc_raw(), get_motor_driver_i_sens_rev_adc_raw());
+
+        ESP_LOGI(TAG, "cur_pulse_count_time_ms: %lld, cur_pulse_count: %d, rpm: %f, distance_mm: %f, i_sens_fwd_adc_raw: %d, i_sense_rev_adc_raw: %d\n", cur_pulse_count_time_ms, cur_pulse_count, ctx->rpm, ctx->distance_mm, motor_driver_i_sense_fwd_adc_raw, motor_driver_i_sense_rev_adc_raw);
         if (cur_pulse_count != ctx->prev_pulse_count) {
             ctx->prev_pulse_count = cur_pulse_count;
             ctx->prev_pulse_count_time_ms = cur_pulse_count_time_ms;
         }
     }
-}
-
-void enable_motor_driver() {
-    // if (gpio_get_level(GPIO_MOTOR_DRIVER_ENABLE) == 0) {
-    ESP_LOGI(TAG, "enable_motor_driver");
-    gpio_set_level(GPIO_MOTOR_DRIVER_ENABLE, 1);
-    //}
-}
-
-void disable_motor_driver() {
-    // if (gpio_get_level(GPIO_MOTOR_DRIVER_ENABLE) == 1) {
-    ESP_LOGI(TAG, "disable_motor_driver");
-    gpio_set_level(GPIO_MOTOR_DRIVER_ENABLE, 0);
-    // }
 }
 
 // isr event handler for buttons (up/down)
@@ -170,12 +199,12 @@ static void gpio_btn_event_task(void* arg) {
                 ESP_LOGI(TAG, "button up pressed");
                 enable_motor_driver();
                 bdc_motor_forward(motor);
-                bdc_motor_set_speed(motor, (uint32_t)200);
+                MOTOR_EXPECTED_SPEED = 200;
             } else if (gpio_get_level(GPIO_BTN_DOWN) == 1 && gpio_get_level(GPIO_BTN_UP) == 0) {
                 ESP_LOGI(TAG, "button down pressed");
                 enable_motor_driver();
                 bdc_motor_reverse(motor);
-                bdc_motor_set_speed(motor, (uint32_t)200);
+                MOTOR_EXPECTED_SPEED = 150;
             } else if (gpio_get_level(GPIO_BTN_DOWN) == 0 && gpio_get_level(GPIO_BTN_UP) == 0 && gpio_get_level(GPIO_BTN_SET) == 1) {
                 ESP_LOGI(TAG, "button SET is pressed");
                 pcnt_unit_clear_count(pcnt_unit);
@@ -375,19 +404,12 @@ void app_main() {
     pcnt_watch_event_data_t event_data;
     while (1) {
         ESP_ERROR_CHECK(pcnt_unit_get_count(motor_ctrl_ctx.pcnt_encoder, &pulse_count));
-        if (pulse_count == BDC_ENCODER_PCNT_LIMIT_OVERFLOW_STEP * 2 || pulse_count == BDC_ENCODER_PCNT_HIGH_LIMIT - BDC_ENCODER_PCNT_LIMIT_OVERFLOW_STEP) {
-            bdc_motor_set_speed(motor, 80);
-        }
-        if (pulse_count == 0) {
-            bdc_motor_coast(motor);
-            pcnt_unit_clear_count(pcnt_unit);
-        } else if (pulse_count == BDC_ENCODER_PCNT_HIGH_LIMIT) {
-            bdc_motor_coast(motor);
-        }
+
         if (xQueueReceive(motor_ctrl_ctx.pcnt_event_queue, &event_data, pdMS_TO_TICKS(1000))) {
             ESP_LOGI(TAG, "Watch point event, count: %d | zero cross mode: %d", event_data.watch_point_value, event_data.zero_cross_mode);
-        } else {
-            ESP_LOGI(TAG, "Pulse count: %d", pulse_count);
         }
+        // else {
+        //     ESP_LOGI(TAG, "Pulse count: %d", pulse_count);
+        // }
     }
 }
