@@ -149,14 +149,13 @@ static void motor_enc_loop_cp(void* args) {
             bdc_motor_set_speed(motor, 150);
             motor_speed_slowed = true;
         }
-
     } else {
         motor_speed_slowed = false;
     }
     if ((cur_pulse_count == BDC_ENCODER_PCNT_HIGH_LIMIT && ctx->rpm > 0)) {  //|| (motor_driver_i_sense_fwd_adc_raw > 1000 && ctx->rpm > 0)
         ESP_LOGI(TAG, "fwd disable");
         disable_motor_driver();
-    } else if ((cur_pulse_count <= 0 && ctx->rpm < 0) || (motor_driver_i_sense_rev_adc_raw > 1000 && ctx->rpm < 0)) {
+    } else if ((cur_pulse_count <= 0 && ctx->rpm < 0) || (motor_driver_i_sense_rev_adc_raw > 1000 && ctx->rpm <= 0)) {
         ESP_LOGI(TAG, "rev disable");
         disable_motor_driver();
         pcnt_unit_clear_count(pcnt_unit);
