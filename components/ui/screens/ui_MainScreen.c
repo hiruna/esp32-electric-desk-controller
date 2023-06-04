@@ -9,6 +9,7 @@ void ui_MainScreen_screen_init(void)
 {
     ui_MainScreen = lv_obj_create(NULL);
     lv_obj_clear_flag(ui_MainScreen, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+    lv_obj_set_scrollbar_mode(ui_MainScreen, LV_SCROLLBAR_MODE_OFF);
     lv_obj_set_flex_flow(ui_MainScreen, LV_FLEX_FLOW_COLUMN);
     lv_obj_set_flex_align(ui_MainScreen, LV_FLEX_ALIGN_SPACE_BETWEEN, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
 
@@ -151,5 +152,7 @@ void ui_MainScreen_screen_init(void)
     lv_label_set_text(ui_lblMainScreenFooterNotifText, "This is a scrolling notification.");
     lv_obj_set_style_text_font(ui_lblMainScreenFooterNotifText, &ui_font_MontserratSemiBold10,
                                LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    lv_obj_add_event_cb(ui_MainScreen, ui_event_MainScreen, LV_EVENT_ALL, NULL);
 
 }

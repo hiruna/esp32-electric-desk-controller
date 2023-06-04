@@ -1,5 +1,6 @@
 SET(SOURCES screens/ui_BootScreen.c
     screens/ui_MainScreen.c
+    screens/ui_MenuScreen.c
     ui.c
     ui_helpers.c
     images/ui_img_wifi_solid_png.c

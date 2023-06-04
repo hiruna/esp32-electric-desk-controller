@@ -16,6 +16,9 @@
 #include "esp_log.h"
 #include "lvgl.h"
 
+#include "driver/pulse_cnt.h"
+#include "driver/gpio.h"
+
 #include "lvgl_helpers.h"
 #include "ui/ui.h"
 
@@ -37,27 +40,42 @@
 #define TAG "ElectricDeskControllerUI"
 #define LV_TICK_PERIOD_MS 1
 
+#define EXAMPLE_PCNT_HIGH_LIMIT 100
+#define EXAMPLE_PCNT_LOW_LIMIT  -100
+
 /**********************
  *  STATIC PROTOTYPES
  **********************/
 static void lv_tick_task(void *arg);
 static void guiTask(void *pvParameter);
 
-/**********************
- *   APPLICATION MAIN
- **********************/
-void app_main() {
-
-    /* If you want to use a task to create the graphic, you NEED to create a Pinned task
-     * Otherwise there can be problem such as memory corruption and so on.
-     * NOTE: When not using Wi-Fi nor Bluetooth you can pin the guiTask to core 0 */
-    xTaskCreatePinnedToCore(guiTask, "gui", 4096*2, NULL, 0, NULL, 1);
-}
-
 /* Creates a semaphore to handle concurrent call to lvgl stuff
  * If you wish to call *any* lvgl function from other threads/tasks
  * you should lock on the very same semaphore! */
 SemaphoreHandle_t xGuiSemaphore;
+
+const gpio_num_t GPIO_CTRL_PANEL_ENC_A = GPIO_NUM_4;
+const gpio_num_t GPIO_CTRL_PANEL_ENC_B = GPIO_NUM_5;
+const gpio_num_t GPIO_CTRL_PANEL_ENC_BTN = GPIO_NUM_13;
+const uint64_t GPIO_CTRL_PANEL_ENC_BTN_BIT_MASK = (1ULL << GPIO_CTRL_PANEL_ENC_BTN);
+
+pcnt_unit_handle_t ctrl_panel_enc_pcnt_unit = NULL;
+//static QueueHandle_t ctrl_panel_enc_queue = NULL;
+//
+//// isr event handler for buttons (up/down)
+//static void IRAM_ATTR ctrl_panel_enc_btn_event_handler(void* arg) {
+//    uint32_t gpio_num = (uint32_t)arg;
+//    xQueueSendFromISR(ctrl_panel_enc_queue, &gpio_num, NULL);
+//}
+
+//static bool example_pcnt_on_reach(pcnt_unit_handle_t unit, const pcnt_watch_event_data_t *edata, void *user_ctx)
+//{
+//    BaseType_t high_task_wakeup;
+//    QueueHandle_t queue = (QueueHandle_t)user_ctx;
+//    // send event data to queue, from this interrupt callback
+//    xQueueSendFromISR(queue, &(edata->watch_point_value), &high_task_wakeup);
+//    return (high_task_wakeup == pdTRUE);
+//}
 
 
 static void lv_tick_task(void *arg) {
@@ -93,6 +111,108 @@ static void start_touch_calibration() {
 
 #endif
 
+bool ctrl_panel_enc_btn_pressed() {
+    return gpio_get_level(GPIO_CTRL_PANEL_ENC_BTN) == 0;
+}
+
+void ctrl_panel_enc_lv_cb(struct _lv_indev_drv_t *drv, lv_indev_data_t*data){
+
+    static int lastEncVal = 0;
+    int currentEncVal;
+    pcnt_unit_get_count(ctrl_panel_enc_pcnt_unit, &currentEncVal);
+
+    int encDiff = currentEncVal-lastEncVal;
+    if(data->enc_diff != encDiff) {
+        ESP_LOGI(TAG, "encoder value: %d | last diff: %d, current diff: %d", currentEncVal, data->enc_diff, encDiff);
+    }
+    if(encDiff<0) {
+        encDiff = -1;
+    } else if(encDiff > 0) {
+        encDiff = 1;
+    } else {
+        encDiff = 0;
+    }
+    data->enc_diff = (int16_t)encDiff;
+
+    if(ctrl_panel_enc_btn_pressed()) {
+        ESP_LOGI(TAG, "encoder btn pressed!");
+        data->state = LV_INDEV_STATE_PR;
+    } else{
+        data->state = LV_INDEV_STATE_REL;
+    }
+    lastEncVal = currentEncVal;
+  //  return false; /*No buffering now so no more data read*/
+}
+
+static void setupCtrlPanelEncoder() {
+    // ----------------
+    ESP_LOGI(TAG, "install pcnt unit");
+    pcnt_unit_config_t unit_config = {
+            .high_limit = EXAMPLE_PCNT_HIGH_LIMIT,
+            .low_limit = EXAMPLE_PCNT_LOW_LIMIT,
+    };
+    ESP_ERROR_CHECK(pcnt_new_unit(&unit_config, &ctrl_panel_enc_pcnt_unit));
+
+    ESP_LOGI(TAG, "set glitch filter");
+    pcnt_glitch_filter_config_t filter_config = {
+            .max_glitch_ns = 1000,
+    };
+    ESP_ERROR_CHECK(pcnt_unit_set_glitch_filter(ctrl_panel_enc_pcnt_unit, &filter_config));
+
+    ESP_LOGI(TAG, "install pcnt channels");
+    pcnt_chan_config_t chan_a_config = {
+            .edge_gpio_num = GPIO_CTRL_PANEL_ENC_A,
+            .level_gpio_num = GPIO_CTRL_PANEL_ENC_B,
+    };
+    pcnt_channel_handle_t pcnt_chan_a = NULL;
+    ESP_ERROR_CHECK(pcnt_new_channel(ctrl_panel_enc_pcnt_unit, &chan_a_config, &pcnt_chan_a));
+    pcnt_chan_config_t chan_b_config = {
+            .edge_gpio_num = GPIO_CTRL_PANEL_ENC_B,
+            .level_gpio_num = GPIO_CTRL_PANEL_ENC_A,
+    };
+    pcnt_channel_handle_t pcnt_chan_b = NULL;
+    ESP_ERROR_CHECK(pcnt_new_channel(ctrl_panel_enc_pcnt_unit, &chan_b_config, &pcnt_chan_b));
+
+    ESP_LOGI(TAG, "set edge and level actions for pcnt channels");
+    ESP_ERROR_CHECK(pcnt_channel_set_edge_action(pcnt_chan_a, PCNT_CHANNEL_EDGE_ACTION_DECREASE, PCNT_CHANNEL_EDGE_ACTION_INCREASE));
+    ESP_ERROR_CHECK(pcnt_channel_set_level_action(pcnt_chan_a, PCNT_CHANNEL_LEVEL_ACTION_KEEP, PCNT_CHANNEL_LEVEL_ACTION_INVERSE));
+    ESP_ERROR_CHECK(pcnt_channel_set_edge_action(pcnt_chan_b, PCNT_CHANNEL_EDGE_ACTION_INCREASE, PCNT_CHANNEL_EDGE_ACTION_DECREASE));
+    ESP_ERROR_CHECK(pcnt_channel_set_level_action(pcnt_chan_b, PCNT_CHANNEL_LEVEL_ACTION_KEEP, PCNT_CHANNEL_LEVEL_ACTION_INVERSE));
+//
+//    ESP_LOGI(TAG, "add watch points and register callbacks");
+//    int watch_points[] = {EXAMPLE_PCNT_LOW_LIMIT, -50, 0, 50, EXAMPLE_PCNT_HIGH_LIMIT};
+//    for (size_t i = 0; i < sizeof(watch_points) / sizeof(watch_points[0]); i++) {
+//        ESP_ERROR_CHECK(pcnt_unit_add_watch_point(ctrl_panel_enc_pcnt_unit, watch_points[i]));
+//    }
+//    pcnt_event_callbacks_t cbs = {
+//            .on_reach = example_pcnt_on_reach,
+//    };
+//    ctrl_panel_enc_queue = xQueueCreate(10, sizeof(int));
+//    ESP_ERROR_CHECK(pcnt_unit_register_event_callbacks(ctrl_panel_enc_pcnt_unit, &cbs, ctrl_panel_enc_queue));
+
+    ESP_LOGI(TAG, "enable pcnt unit");
+    ESP_ERROR_CHECK(pcnt_unit_enable(ctrl_panel_enc_pcnt_unit));
+    ESP_LOGI(TAG, "clear pcnt unit");
+    ESP_ERROR_CHECK(pcnt_unit_clear_count(ctrl_panel_enc_pcnt_unit));
+    ESP_LOGI(TAG, "start pcnt unit");
+    ESP_ERROR_CHECK(pcnt_unit_start(ctrl_panel_enc_pcnt_unit));
+
+    ESP_LOGI(TAG, "configuring gpio buttons...");
+    gpio_config_t gpio_btn_conf =  {
+            .pin_bit_mask= GPIO_CTRL_PANEL_ENC_BTN_BIT_MASK,
+            .mode = GPIO_MODE_INPUT,
+            .pull_up_en = GPIO_PULLUP_ENABLE,
+            .pull_down_en = GPIO_PULLDOWN_DISABLE,
+            .intr_type = GPIO_INTR_ANYEDGE
+    };
+
+    esp_err_t err = gpio_config(&gpio_btn_conf);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "error configuring gpio: %s", esp_err_to_name(err));
+    }
+    // ----------------
+
+}
 static void guiTask(void *pvParameter) {
 
     (void) pvParameter;
@@ -172,6 +292,16 @@ static void guiTask(void *pvParameter) {
     lv_indev_drv_register(&indev_drv);
 #endif
 
+
+    lv_indev_drv_t indev_encoder_drv;
+    lv_indev_drv_init(&indev_encoder_drv);
+    indev_encoder_drv.type = LV_INDEV_TYPE_ENCODER;
+    indev_encoder_drv.read_cb = ctrl_panel_enc_lv_cb;
+    indev_encoder_drv.long_press_time = 1000;
+    lv_indev_t* indev_encoder = lv_indev_drv_register(&indev_encoder_drv);
+    lv_group_t * g = lv_group_create();
+    lv_indev_set_group(indev_encoder, g);
+
     /* Create and start a periodic timer interrupt to call lv_tick_inc */
     const esp_timer_create_args_t periodic_timer_args = {
             .callback = &lv_tick_task,
@@ -198,6 +328,10 @@ static void guiTask(void *pvParameter) {
     ui_init();
 #endif
 
+    lv_group_add_obj(g, ui_MainScreen);
+    lv_group_add_obj(g, ui_MenuScreen);
+    lv_group_add_obj(g, ui_rollerMenuScreenItems);
+
     while (1) {
         /* Delay 1 tick (assumes FreeRTOS tick is 10ms */
         vTaskDelay(pdMS_TO_TICKS(10));
@@ -215,4 +349,16 @@ static void guiTask(void *pvParameter) {
     free(buf2);
 #endif
     vTaskDelete(NULL);
+}
+
+
+/**********************
+ *   APPLICATION MAIN
+ **********************/
+void app_main() {
+    setupCtrlPanelEncoder();
+    /* If you want to use a task to create the graphic, you NEED to create a Pinned task
+     * Otherwise there can be problem such as memory corruption and so on.
+     * NOTE: When not using Wi-Fi nor Bluetooth you can pin the guiTask to core 0 */
+    xTaskCreatePinnedToCore(guiTask, "gui", 4096*2, NULL, 0, NULL, 1);
 }

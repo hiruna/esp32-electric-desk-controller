@@ -18,6 +18,7 @@ lv_obj_t * ui_lblBootScreenAppVer;
 
 // SCREEN: ui_MainScreen
 void ui_MainScreen_screen_init(void);
+void ui_event_MainScreen(lv_event_t * e);
 lv_obj_t * ui_MainScreen;
 lv_obj_t * ui_panelMainScreenHeader;
 lv_obj_t * ui_panelMainScreenHeaderLeft;
@@ -32,6 +33,14 @@ lv_obj_t * ui_lblDeskHeightValue;
 lv_obj_t * ui_lblDeskHeightUnits;
 lv_obj_t * ui_panelMainScreenFooter;
 lv_obj_t * ui_lblMainScreenFooterNotifText;
+
+// SCREEN: ui_MenuScreen
+void ui_MenuScreen_screen_init(void);
+void ui_event_MenuScreen(lv_event_t * e);
+lv_obj_t * ui_MenuScreen;
+lv_obj_t * ui_panelMenuScreenHeader;
+lv_obj_t * ui_Label1;
+lv_obj_t * ui_rollerMenuScreenItems;
 lv_obj_t * ui____initial_actions0;
 
 ///////////////////// TEST LVGL SETTINGS ////////////////////
@@ -53,6 +62,22 @@ void ui_event_BootScreen(lv_event_t * e)
         _ui_screen_change(ui_MainScreen, LV_SCR_LOAD_ANIM_NONE, 100, 1000);
     }
 }
+void ui_event_MainScreen(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+    lv_obj_t * target = lv_event_get_target(e);
+    if(event_code == LV_EVENT_LONG_PRESSED) {
+        _ui_screen_change(ui_MenuScreen, LV_SCR_LOAD_ANIM_NONE, 500, 0);
+    }
+}
+void ui_event_MenuScreen(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+    lv_obj_t * target = lv_event_get_target(e);
+    if(event_code == LV_EVENT_LONG_PRESSED) {
+        _ui_screen_change(ui_MainScreen, LV_SCR_LOAD_ANIM_NONE, 500, 0);
+    }
+}
 
 ///////////////////// SCREENS ////////////////////
 
@@ -63,6 +88,7 @@ void ui_init(void)
     lv_disp_set_theme(dispp, theme);
     ui_BootScreen_screen_init();
     ui_MainScreen_screen_init();
+    ui_MenuScreen_screen_init();
     ui____initial_actions0 = lv_obj_create(NULL);
     lv_disp_load_scr(ui_BootScreen);
 }

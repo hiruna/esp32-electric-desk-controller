@@ -23,6 +23,7 @@ extern lv_obj_t * ui_lblBootScreenGitUrl;
 extern lv_obj_t * ui_lblBootScreenAppVer;
 // SCREEN: ui_MainScreen
 void ui_MainScreen_screen_init(void);
+void ui_event_MainScreen(lv_event_t * e);
 extern lv_obj_t * ui_MainScreen;
 extern lv_obj_t * ui_panelMainScreenHeader;
 extern lv_obj_t * ui_panelMainScreenHeaderLeft;
@@ -37,6 +38,13 @@ extern lv_obj_t * ui_lblDeskHeightValue;
 extern lv_obj_t * ui_lblDeskHeightUnits;
 extern lv_obj_t * ui_panelMainScreenFooter;
 extern lv_obj_t * ui_lblMainScreenFooterNotifText;
+// SCREEN: ui_MenuScreen
+void ui_MenuScreen_screen_init(void);
+void ui_event_MenuScreen(lv_event_t * e);
+extern lv_obj_t * ui_MenuScreen;
+extern lv_obj_t * ui_panelMenuScreenHeader;
+extern lv_obj_t * ui_Label1;
+extern lv_obj_t * ui_rollerMenuScreenItems;
 extern lv_obj_t * ui____initial_actions0;
 
 LV_IMG_DECLARE(ui_img_wifi_solid_png);    // assets/wifi_solid.png
