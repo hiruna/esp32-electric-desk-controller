@@ -1,0 +1,16 @@
+{
+  "codename": "FontAwesomeRegular12",
+  "ttf_path": "/assets/fonts/FontAwesome/Font Awesome 6 Free-Regular-400.otf",
+  "bin_path": "/assets/fonts/FontAwesome/ui_font_FontAwesomeRegular12.bin",
+  "c_path": "/assets/fonts/FontAwesome/ui_font_FontAwesomeRegular12.c",
+  "cfg_path": "/assets/fonts/FontAwesome/ui_font_FontAwesomeRegular12.fcfg",
+  "size": 12,
+  "bpp": 1,
+  "letters": 3,
+  "ranges": [
+    "0x20-0xff"
+  ],
+  "symbols": "",
+  "customparams": "--no-compress --no-prefilter",
+  "uploaded": false
+}

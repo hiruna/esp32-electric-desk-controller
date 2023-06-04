@@ -1,0 +1,16 @@
+{
+  "codename": "MontserratSemiBold10",
+  "ttf_path": "/assets/fonts/Montserrat/Montserrat-SemiBold.ttf",
+  "bin_path": "/assets/fonts/Montserrat/ui_font_MontserratSemiBold10.bin",
+  "c_path": "/assets/fonts/Montserrat/ui_font_MontserratSemiBold10.c",
+  "cfg_path": "/assets/fonts/Montserrat/ui_font_MontserratSemiBold10.fcfg",
+  "size": 10,
+  "bpp": 1,
+  "letters": 0,
+  "ranges": [
+    "0x20-0x7f"
+  ],
+  "symbols": "",
+  "customparams": "--no-compress --no-prefilter",
+  "uploaded": false
+}
