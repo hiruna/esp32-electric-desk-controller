@@ -45,7 +45,7 @@ void ui_MenuScreen_screen_init(void)
     lv_obj_set_style_text_font(ui_Label1, &ui_font_MontserratSemiBold10, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     ui_rollerMenuScreenItems = lv_roller_create(ui_MenuScreen);
-    lv_roller_set_options(ui_rollerMenuScreenItems, "BACK\nMEMORY\nTIMER\nSETTINGS", LV_ROLLER_MODE_NORMAL);
+    lv_roller_set_options(ui_rollerMenuScreenItems, "MEMORY\nTIMER\nSETTINGS\nBACK", LV_ROLLER_MODE_NORMAL);
     lv_obj_set_width(ui_rollerMenuScreenItems, 128);
     lv_obj_set_height(ui_rollerMenuScreenItems, 49);
     lv_obj_set_align(ui_rollerMenuScreenItems, LV_ALIGN_CENTER);

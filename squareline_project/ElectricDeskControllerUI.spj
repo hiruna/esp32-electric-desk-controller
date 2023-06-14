@@ -6081,7 +6081,7 @@
               {
                 "nid": 1311867882,
                 "strtype": "ROLLER/Options",
-                "strval": "BACK\\nMEMORY\\nTIMER\\nSETTINGS",
+                "strval": "MEMORY\\nTIMER\\nSETTINGS\\nBACK",
                 "InheritedType": 10
               },
               {
@@ -7266,7 +7266,7 @@
               {
                 "nid": 891080924,
                 "strtype": "OBJECT/Checked",
-                "strval": "True",
+                "strval": "False",
                 "InheritedType": 2
               },
               {
@@ -7278,13 +7278,13 @@
               {
                 "nid": -1897043570,
                 "strtype": "OBJECT/Focused",
-                "strval": "True",
+                "strval": "False",
                 "InheritedType": 2
               },
               {
                 "nid": 1474429156,
                 "strtype": "OBJECT/Pressed",
-                "strval": "True",
+                "strval": "False",
                 "InheritedType": 2
               },
               {
@@ -7319,7 +7319,7 @@
               {
                 "nid": -1463619929,
                 "strtype": "ROLLER/Options",
-                "strval": "M1\\nM2\\nM3",
+                "strval": "M1\\nM2\\nM3\\nBACK",
                 "InheritedType": 10
               },
               {
@@ -7451,6 +7451,71 @@
                 "strtype": "ROLLER/Style_selected",
                 "strval": "lv.PART.SELECTED, Text, Rectangle",
                 "InheritedType": 11
+              },
+              {
+                "disabled": false,
+                "nid": 302584839,
+                "strtype": "ROLLER/EventHandler",
+                "strval": "CLICKED",
+                "childs": [
+                  {
+                    "nid": -1028334237,
+                    "strtype": "_custom/name",
+                    "strval": "eventMemoryScreenRollerItemClicked",
+                    "InheritedType": 10
+                  },
+                  {
+                    "nid": -370882919,
+                    "strtype": "_custom/condition_C",
+                    "strval": "",
+                    "InheritedType": 10
+                  },
+                  {
+                    "nid": -2080620843,
+                    "strtype": "_custom/condition_P",
+                    "strval": "",
+                    "InheritedType": 10
+                  },
+                  {
+                    "nid": 868749130,
+                    "strtype": "_custom/action",
+                    "strval": "CALL FUNCTION",
+                    "childs": [
+                      {
+                        "nid": -438928464,
+                        "strtype": "CALL FUNCTION/Name",
+                        "strval": "CALL FUNCTION",
+                        "InheritedType": 10
+                      },
+                      {
+                        "nid": -639709457,
+                        "strtype": "CALL FUNCTION/Call",
+                        "strval": "<{Function_name}>( event_struct )",
+                        "InheritedType": 10
+                      },
+                      {
+                        "nid": 947405886,
+                        "strtype": "CALL FUNCTION/CallC",
+                        "strval": "<{Function_name}>( e );",
+                        "InheritedType": 10
+                      },
+                      {
+                        "nid": -994195651,
+                        "strtype": "CALL FUNCTION/Function_name",
+                        "strval": "memoryScreenRollerItemClicked",
+                        "InheritedType": 10
+                      },
+                      {
+                        "nid": 258541366,
+                        "strtype": "CALL FUNCTION/Dont_export_function",
+                        "strval": "False",
+                        "InheritedType": 2
+                      }
+                    ],
+                    "InheritedType": 10
+                  }
+                ],
+                "InheritedType": 4
               }
             ],
             "saved_objtypeKey": "ROLLER"
@@ -7633,6 +7698,71 @@
             "strtype": "SCREEN/Style_scrollbar",
             "strval": "lv.PART.SCROLLBAR, Rectangle, Pad",
             "InheritedType": 11
+          },
+          {
+            "disabled": false,
+            "nid": 2003046138,
+            "strtype": "SCREEN/EventHandler",
+            "strval": "SCREEN_LOAD_START",
+            "childs": [
+              {
+                "nid": 744886417,
+                "strtype": "_custom/name",
+                "strval": "eventMemoryScreenLoadStart",
+                "InheritedType": 10
+              },
+              {
+                "nid": 662174460,
+                "strtype": "_custom/condition_C",
+                "strval": "",
+                "InheritedType": 10
+              },
+              {
+                "nid": -976142500,
+                "strtype": "_custom/condition_P",
+                "strval": "",
+                "InheritedType": 10
+              },
+              {
+                "nid": 634825283,
+                "strtype": "_custom/action",
+                "strval": "CALL FUNCTION",
+                "childs": [
+                  {
+                    "nid": -1792012585,
+                    "strtype": "CALL FUNCTION/Name",
+                    "strval": "CALL FUNCTION",
+                    "InheritedType": 10
+                  },
+                  {
+                    "nid": 1189542956,
+                    "strtype": "CALL FUNCTION/Call",
+                    "strval": "<{Function_name}>( event_struct )",
+                    "InheritedType": 10
+                  },
+                  {
+                    "nid": -2102323369,
+                    "strtype": "CALL FUNCTION/CallC",
+                    "strval": "<{Function_name}>( e );",
+                    "InheritedType": 10
+                  },
+                  {
+                    "nid": -580311602,
+                    "strtype": "CALL FUNCTION/Function_name",
+                    "strval": "memoryScreenLoadStart",
+                    "InheritedType": 10
+                  },
+                  {
+                    "nid": 964485846,
+                    "strtype": "CALL FUNCTION/Dont_export_function",
+                    "strval": "False",
+                    "InheritedType": 2
+                  }
+                ],
+                "InheritedType": 10
+              }
+            ],
+            "InheritedType": 4
           }
         ],
         "saved_objtypeKey": "SCREEN"
@@ -8369,7 +8499,7 @@
               {
                 "nid": 73671033,
                 "strtype": "OBJECT/Checked",
-                "strval": "True",
+                "strval": "False",
                 "InheritedType": 2
               },
               {
@@ -8381,13 +8511,13 @@
               {
                 "nid": 1751756247,
                 "strtype": "OBJECT/Focused",
-                "strval": "True",
+                "strval": "False",
                 "InheritedType": 2
               },
               {
                 "nid": -931225351,
                 "strtype": "OBJECT/Pressed",
-                "strval": "True",
+                "strval": "False",
                 "InheritedType": 2
               },
               {
@@ -8422,7 +8552,7 @@
               {
                 "nid": -593610097,
                 "strtype": "ROLLER/Options",
-                "strval": "OFF\\n10 MINUTES\\n30 MINUTES\\n45 MINUTES\\n1 HOUR",
+                "strval": "OFF\\n10 MINUTES\\n30 MINUTES\\n45 MINUTES\\n1 HOUR\\nBACK",
                 "InheritedType": 10
               },
               {
@@ -8554,6 +8684,71 @@
                 "strtype": "ROLLER/Style_selected",
                 "strval": "lv.PART.SELECTED, Text, Rectangle",
                 "InheritedType": 11
+              },
+              {
+                "disabled": false,
+                "nid": -1520904163,
+                "strtype": "ROLLER/EventHandler",
+                "strval": "CLICKED",
+                "childs": [
+                  {
+                    "nid": 1502650674,
+                    "strtype": "_custom/name",
+                    "strval": "eventTimerScreenRollerItemClicked",
+                    "InheritedType": 10
+                  },
+                  {
+                    "nid": -1452082345,
+                    "strtype": "_custom/condition_C",
+                    "strval": "",
+                    "InheritedType": 10
+                  },
+                  {
+                    "nid": 1264361492,
+                    "strtype": "_custom/condition_P",
+                    "strval": "",
+                    "InheritedType": 10
+                  },
+                  {
+                    "nid": -773310258,
+                    "strtype": "_custom/action",
+                    "strval": "CALL FUNCTION",
+                    "childs": [
+                      {
+                        "nid": -1339778096,
+                        "strtype": "CALL FUNCTION/Name",
+                        "strval": "CALL FUNCTION",
+                        "InheritedType": 10
+                      },
+                      {
+                        "nid": 1971992952,
+                        "strtype": "CALL FUNCTION/Call",
+                        "strval": "<{Function_name}>( event_struct )",
+                        "InheritedType": 10
+                      },
+                      {
+                        "nid": -1256351250,
+                        "strtype": "CALL FUNCTION/CallC",
+                        "strval": "<{Function_name}>( e );",
+                        "InheritedType": 10
+                      },
+                      {
+                        "nid": -356093352,
+                        "strtype": "CALL FUNCTION/Function_name",
+                        "strval": "timerScreenRollerItemClicked",
+                        "InheritedType": 10
+                      },
+                      {
+                        "nid": -908753873,
+                        "strtype": "CALL FUNCTION/Dont_export_function",
+                        "strval": "False",
+                        "InheritedType": 2
+                      }
+                    ],
+                    "InheritedType": 10
+                  }
+                ],
+                "InheritedType": 4
               }
             ],
             "saved_objtypeKey": "ROLLER"
@@ -8736,6 +8931,71 @@
             "strtype": "SCREEN/Style_scrollbar",
             "strval": "lv.PART.SCROLLBAR, Rectangle, Pad",
             "InheritedType": 11
+          },
+          {
+            "disabled": false,
+            "nid": -1798330735,
+            "strtype": "SCREEN/EventHandler",
+            "strval": "SCREEN_LOAD_START",
+            "childs": [
+              {
+                "nid": -1555531582,
+                "strtype": "_custom/name",
+                "strval": "eventTimerScreenLoadStart",
+                "InheritedType": 10
+              },
+              {
+                "nid": 235454749,
+                "strtype": "_custom/condition_C",
+                "strval": "",
+                "InheritedType": 10
+              },
+              {
+                "nid": 634904217,
+                "strtype": "_custom/condition_P",
+                "strval": "",
+                "InheritedType": 10
+              },
+              {
+                "nid": 688816574,
+                "strtype": "_custom/action",
+                "strval": "CALL FUNCTION",
+                "childs": [
+                  {
+                    "nid": -562427895,
+                    "strtype": "CALL FUNCTION/Name",
+                    "strval": "CALL FUNCTION",
+                    "InheritedType": 10
+                  },
+                  {
+                    "nid": 1264867821,
+                    "strtype": "CALL FUNCTION/Call",
+                    "strval": "<{Function_name}>( event_struct )",
+                    "InheritedType": 10
+                  },
+                  {
+                    "nid": 909799121,
+                    "strtype": "CALL FUNCTION/CallC",
+                    "strval": "<{Function_name}>( e );",
+                    "InheritedType": 10
+                  },
+                  {
+                    "nid": -1072339180,
+                    "strtype": "CALL FUNCTION/Function_name",
+                    "strval": "timerScreenLoadStart",
+                    "InheritedType": 10
+                  },
+                  {
+                    "nid": 1875996009,
+                    "strtype": "CALL FUNCTION/Dont_export_function",
+                    "strval": "False",
+                    "InheritedType": 2
+                  }
+                ],
+                "InheritedType": 10
+              }
+            ],
+            "InheritedType": 4
           }
         ],
         "saved_objtypeKey": "SCREEN"
@@ -9472,7 +9732,7 @@
               {
                 "nid": -516822653,
                 "strtype": "OBJECT/Checked",
-                "strval": "True",
+                "strval": "False",
                 "InheritedType": 2
               },
               {
@@ -9484,13 +9744,13 @@
               {
                 "nid": 1814741457,
                 "strtype": "OBJECT/Focused",
-                "strval": "True",
+                "strval": "False",
                 "InheritedType": 2
               },
               {
                 "nid": 1932088710,
                 "strtype": "OBJECT/Pressed",
-                "strval": "True",
+                "strval": "False",
                 "InheritedType": 2
               },
               {
@@ -9525,7 +9785,7 @@
               {
                 "nid": -45815550,
                 "strtype": "ROLLER/Options",
-                "strval": "WIFI\\nMOTOR SPEED",
+                "strval": "WIFI\\nMOTOR SPEED\\nBACK",
                 "InheritedType": 10
               },
               {
@@ -9657,6 +9917,71 @@
                 "strtype": "ROLLER/Style_selected",
                 "strval": "lv.PART.SELECTED, Text, Rectangle",
                 "InheritedType": 11
+              },
+              {
+                "disabled": false,
+                "nid": -1395740407,
+                "strtype": "ROLLER/EventHandler",
+                "strval": "CLICKED",
+                "childs": [
+                  {
+                    "nid": 1037368419,
+                    "strtype": "_custom/name",
+                    "strval": "eventSettingsScreenRollerItemClicked",
+                    "InheritedType": 10
+                  },
+                  {
+                    "nid": 572065202,
+                    "strtype": "_custom/condition_C",
+                    "strval": "",
+                    "InheritedType": 10
+                  },
+                  {
+                    "nid": -276772377,
+                    "strtype": "_custom/condition_P",
+                    "strval": "",
+                    "InheritedType": 10
+                  },
+                  {
+                    "nid": -1805606182,
+                    "strtype": "_custom/action",
+                    "strval": "CALL FUNCTION",
+                    "childs": [
+                      {
+                        "nid": -1193764156,
+                        "strtype": "CALL FUNCTION/Name",
+                        "strval": "CALL FUNCTION",
+                        "InheritedType": 10
+                      },
+                      {
+                        "nid": -943302401,
+                        "strtype": "CALL FUNCTION/Call",
+                        "strval": "<{Function_name}>( event_struct )",
+                        "InheritedType": 10
+                      },
+                      {
+                        "nid": 1996089050,
+                        "strtype": "CALL FUNCTION/CallC",
+                        "strval": "<{Function_name}>( e );",
+                        "InheritedType": 10
+                      },
+                      {
+                        "nid": 1393684275,
+                        "strtype": "CALL FUNCTION/Function_name",
+                        "strval": "settingsScreenRollerItemClicked",
+                        "InheritedType": 10
+                      },
+                      {
+                        "nid": 1080072902,
+                        "strtype": "CALL FUNCTION/Dont_export_function",
+                        "strval": "False",
+                        "InheritedType": 2
+                      }
+                    ],
+                    "InheritedType": 10
+                  }
+                ],
+                "InheritedType": 4
               }
             ],
             "saved_objtypeKey": "ROLLER"
@@ -9839,6 +10164,71 @@
             "strtype": "SCREEN/Style_scrollbar",
             "strval": "lv.PART.SCROLLBAR, Rectangle, Pad",
             "InheritedType": 11
+          },
+          {
+            "disabled": false,
+            "nid": 1889322316,
+            "strtype": "SCREEN/EventHandler",
+            "strval": "SCREEN_LOAD_START",
+            "childs": [
+              {
+                "nid": -1838703814,
+                "strtype": "_custom/name",
+                "strval": "eventSettingsScreenLoadStart",
+                "InheritedType": 10
+              },
+              {
+                "nid": 1788480381,
+                "strtype": "_custom/condition_C",
+                "strval": "",
+                "InheritedType": 10
+              },
+              {
+                "nid": -690533742,
+                "strtype": "_custom/condition_P",
+                "strval": "",
+                "InheritedType": 10
+              },
+              {
+                "nid": 1659477708,
+                "strtype": "_custom/action",
+                "strval": "CALL FUNCTION",
+                "childs": [
+                  {
+                    "nid": 1549798401,
+                    "strtype": "CALL FUNCTION/Name",
+                    "strval": "CALL FUNCTION",
+                    "InheritedType": 10
+                  },
+                  {
+                    "nid": -1978701013,
+                    "strtype": "CALL FUNCTION/Call",
+                    "strval": "<{Function_name}>( event_struct )",
+                    "InheritedType": 10
+                  },
+                  {
+                    "nid": -200695862,
+                    "strtype": "CALL FUNCTION/CallC",
+                    "strval": "<{Function_name}>( e );",
+                    "InheritedType": 10
+                  },
+                  {
+                    "nid": -1366416624,
+                    "strtype": "CALL FUNCTION/Function_name",
+                    "strval": "settingsScreenLoadStart",
+                    "InheritedType": 10
+                  },
+                  {
+                    "nid": -1524135362,
+                    "strtype": "CALL FUNCTION/Dont_export_function",
+                    "strval": "False",
+                    "InheritedType": 2
+                  }
+                ],
+                "InheritedType": 10
+              }
+            ],
+            "InheritedType": 4
           }
         ],
         "saved_objtypeKey": "SCREEN"
@@ -9944,7 +10334,7 @@
     "theme_color2": 0,
     "exportFolderPath": "/home/hiruna/code/hiruna/esp32-electric-desk-controller/components/ui",
     "projectExportFolderPath": "/home/hiruna/code/hiruna/esp32-electric-desk-controller",
-    "backup_cnt": 95,
+    "backup_cnt": 106,
     "autosave_cnt": 0,
     "lvgl_version": "8.3.6",
     "callfuncsexport": "C_FILE",

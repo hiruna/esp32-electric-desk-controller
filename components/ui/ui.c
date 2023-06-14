@@ -45,23 +45,29 @@ lv_obj_t * ui_rollerMenuScreenItems;
 
 // SCREEN: ui_MemoryScreen
 void ui_MemoryScreen_screen_init(void);
+void ui_event_MemoryScreen(lv_event_t * e);
 lv_obj_t * ui_MemoryScreen;
 lv_obj_t * ui_panelMemoryScreenHeader;
 lv_obj_t * ui_Label2;
+void ui_event_rollerMemoryScreenItems(lv_event_t * e);
 lv_obj_t * ui_rollerMemoryScreenItems;
 
 // SCREEN: ui_TimerScreen
 void ui_TimerScreen_screen_init(void);
+void ui_event_TimerScreen(lv_event_t * e);
 lv_obj_t * ui_TimerScreen;
 lv_obj_t * ui_panelTimerScreenHeader;
 lv_obj_t * ui_Label3;
+void ui_event_rollerTimerScreenItems(lv_event_t * e);
 lv_obj_t * ui_rollerTimerScreenItems;
 
 // SCREEN: ui_SettingsScreen
 void ui_SettingsScreen_screen_init(void);
+void ui_event_SettingsScreen(lv_event_t * e);
 lv_obj_t * ui_SettingsScreen;
 lv_obj_t * ui_panelSettingsScreenHeader;
 lv_obj_t * ui_Label4;
+void ui_event_rollerSettingsScreenItems(lv_event_t * e);
 lv_obj_t * ui_rollerSettingsScreenItems;
 void ui_event____initial_actions0(lv_event_t * e);
 lv_obj_t * ui____initial_actions0;
@@ -110,6 +116,54 @@ void ui_event_rollerMenuScreenItems(lv_event_t * e)
     lv_obj_t * target = lv_event_get_target(e);
     if(event_code == LV_EVENT_CLICKED) {
         menuScreenRollerItemClicked(e);
+    }
+}
+void ui_event_MemoryScreen(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+    lv_obj_t * target = lv_event_get_target(e);
+    if(event_code == LV_EVENT_SCREEN_LOAD_START) {
+        memoryScreenLoadStart(e);
+    }
+}
+void ui_event_rollerMemoryScreenItems(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+    lv_obj_t * target = lv_event_get_target(e);
+    if(event_code == LV_EVENT_CLICKED) {
+        memoryScreenRollerItemClicked(e);
+    }
+}
+void ui_event_TimerScreen(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+    lv_obj_t * target = lv_event_get_target(e);
+    if(event_code == LV_EVENT_SCREEN_LOAD_START) {
+        timerScreenLoadStart(e);
+    }
+}
+void ui_event_rollerTimerScreenItems(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+    lv_obj_t * target = lv_event_get_target(e);
+    if(event_code == LV_EVENT_CLICKED) {
+        timerScreenRollerItemClicked(e);
+    }
+}
+void ui_event_SettingsScreen(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+    lv_obj_t * target = lv_event_get_target(e);
+    if(event_code == LV_EVENT_SCREEN_LOAD_START) {
+        settingsScreenLoadStart(e);
+    }
+}
+void ui_event_rollerSettingsScreenItems(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+    lv_obj_t * target = lv_event_get_target(e);
+    if(event_code == LV_EVENT_CLICKED) {
+        settingsScreenRollerItemClicked(e);
     }
 }
 void ui_event____initial_actions0(lv_event_t * e)

@@ -48,21 +48,27 @@ void ui_event_rollerMenuScreenItems(lv_event_t * e);
 extern lv_obj_t * ui_rollerMenuScreenItems;
 // SCREEN: ui_MemoryScreen
 void ui_MemoryScreen_screen_init(void);
+void ui_event_MemoryScreen(lv_event_t * e);
 extern lv_obj_t * ui_MemoryScreen;
 extern lv_obj_t * ui_panelMemoryScreenHeader;
 extern lv_obj_t * ui_Label2;
+void ui_event_rollerMemoryScreenItems(lv_event_t * e);
 extern lv_obj_t * ui_rollerMemoryScreenItems;
 // SCREEN: ui_TimerScreen
 void ui_TimerScreen_screen_init(void);
+void ui_event_TimerScreen(lv_event_t * e);
 extern lv_obj_t * ui_TimerScreen;
 extern lv_obj_t * ui_panelTimerScreenHeader;
 extern lv_obj_t * ui_Label3;
+void ui_event_rollerTimerScreenItems(lv_event_t * e);
 extern lv_obj_t * ui_rollerTimerScreenItems;
 // SCREEN: ui_SettingsScreen
 void ui_SettingsScreen_screen_init(void);
+void ui_event_SettingsScreen(lv_event_t * e);
 extern lv_obj_t * ui_SettingsScreen;
 extern lv_obj_t * ui_panelSettingsScreenHeader;
 extern lv_obj_t * ui_Label4;
+void ui_event_rollerSettingsScreenItems(lv_event_t * e);
 extern lv_obj_t * ui_rollerSettingsScreenItems;
 void ui_event____initial_actions0(lv_event_t * e);
 extern lv_obj_t * ui____initial_actions0;

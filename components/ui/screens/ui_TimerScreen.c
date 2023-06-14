@@ -44,12 +44,11 @@ void ui_TimerScreen_screen_init(void)
     lv_obj_set_style_text_font(ui_Label3, &ui_font_MontserratSemiBold10, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     ui_rollerTimerScreenItems = lv_roller_create(ui_TimerScreen);
-    lv_roller_set_options(ui_rollerTimerScreenItems, "OFF\n10 MINUTES\n30 MINUTES\n45 MINUTES\n1 HOUR",
+    lv_roller_set_options(ui_rollerTimerScreenItems, "OFF\n10 MINUTES\n30 MINUTES\n45 MINUTES\n1 HOUR\nBACK",
                           LV_ROLLER_MODE_NORMAL);
     lv_obj_set_width(ui_rollerTimerScreenItems, 128);
     lv_obj_set_height(ui_rollerTimerScreenItems, 49);
     lv_obj_set_align(ui_rollerTimerScreenItems, LV_ALIGN_CENTER);
-    lv_obj_add_state(ui_rollerTimerScreenItems, LV_STATE_CHECKED | LV_STATE_PRESSED | LV_STATE_FOCUSED);       /// States
     lv_obj_clear_flag(ui_rollerTimerScreenItems,
                       LV_OBJ_FLAG_PRESS_LOCK | LV_OBJ_FLAG_CLICK_FOCUSABLE | LV_OBJ_FLAG_GESTURE_BUBBLE |
                       LV_OBJ_FLAG_SNAPPABLE);     /// Flags
@@ -71,5 +70,8 @@ void ui_TimerScreen_screen_init(void)
                                LV_PART_SELECTED | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(ui_rollerTimerScreenItems, lv_color_hex(0x000000), LV_PART_SELECTED | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_opa(ui_rollerTimerScreenItems, 255, LV_PART_SELECTED | LV_STATE_DEFAULT);
+
+    lv_obj_add_event_cb(ui_rollerTimerScreenItems, ui_event_rollerTimerScreenItems, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(ui_TimerScreen, ui_event_TimerScreen, LV_EVENT_ALL, NULL);
 
 }

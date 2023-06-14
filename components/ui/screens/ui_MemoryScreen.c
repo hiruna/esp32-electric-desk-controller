@@ -45,11 +45,10 @@ void ui_MemoryScreen_screen_init(void)
     lv_obj_set_style_text_font(ui_Label2, &ui_font_MontserratSemiBold10, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     ui_rollerMemoryScreenItems = lv_roller_create(ui_MemoryScreen);
-    lv_roller_set_options(ui_rollerMemoryScreenItems, "M1\nM2\nM3", LV_ROLLER_MODE_NORMAL);
+    lv_roller_set_options(ui_rollerMemoryScreenItems, "M1\nM2\nM3\nBACK", LV_ROLLER_MODE_NORMAL);
     lv_obj_set_width(ui_rollerMemoryScreenItems, 128);
     lv_obj_set_height(ui_rollerMemoryScreenItems, 49);
     lv_obj_set_align(ui_rollerMemoryScreenItems, LV_ALIGN_CENTER);
-    lv_obj_add_state(ui_rollerMemoryScreenItems, LV_STATE_CHECKED | LV_STATE_PRESSED | LV_STATE_FOCUSED);       /// States
     lv_obj_clear_flag(ui_rollerMemoryScreenItems,
                       LV_OBJ_FLAG_PRESS_LOCK | LV_OBJ_FLAG_CLICK_FOCUSABLE | LV_OBJ_FLAG_GESTURE_BUBBLE |
                       LV_OBJ_FLAG_SNAPPABLE);     /// Flags
@@ -71,5 +70,8 @@ void ui_MemoryScreen_screen_init(void)
                                LV_PART_SELECTED | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(ui_rollerMemoryScreenItems, lv_color_hex(0x000000), LV_PART_SELECTED | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_opa(ui_rollerMemoryScreenItems, 255, LV_PART_SELECTED | LV_STATE_DEFAULT);
+
+    lv_obj_add_event_cb(ui_rollerMemoryScreenItems, ui_event_rollerMemoryScreenItems, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(ui_MemoryScreen, ui_event_MemoryScreen, LV_EVENT_ALL, NULL);
 
 }

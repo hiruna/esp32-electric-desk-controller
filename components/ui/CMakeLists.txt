@@ -7,6 +7,7 @@ SET(SOURCES screens/ui_BootScreen.c
     ui.c
 ui_events.c
     ui_helpers.c
+    ui_events.c
     images/ui_img_wifi_solid_png.c
     fonts/ui_font_FontAwesomeRegular12.c
     fonts/ui_font_FontAwesomeRegular24.c

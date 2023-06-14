@@ -14,6 +14,12 @@ void initialActions(lv_event_t * e);
 void mainScreenLoadStart(lv_event_t * e);
 void menuScreenLoadStart(lv_event_t * e);
 void menuScreenRollerItemClicked(lv_event_t * e);
+void memoryScreenLoadStart(lv_event_t * e);
+void memoryScreenRollerItemClicked(lv_event_t * e);
+void timerScreenLoadStart(lv_event_t * e);
+void timerScreenRollerItemClicked(lv_event_t * e);
+void settingsScreenLoadStart(lv_event_t * e);
+void settingsScreenRollerItemClicked(lv_event_t * e);
 
 #ifdef __cplusplus
 } /*extern "C"*/

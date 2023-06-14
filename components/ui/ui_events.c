@@ -6,48 +6,125 @@
 #include "ui.h"
 #include "esp_log.h"
 
-lv_group_t * ui_MainScreen_group;
-lv_group_t * ui_MenuScreen_group;
-lv_indev_t* indev_encoder;
+lv_group_t *ui_MainScreen_group;
+lv_group_t *ui_MenuScreen_group;
+lv_group_t *ui_MemoryScreen_group;
+lv_group_t *ui_TimerScreen_group;
+lv_group_t *ui_SettingsScreen_group;
+lv_indev_t *indev_encoder;
 
 
-void initialActions(lv_event_t * e)
-{
+void initialActions(lv_event_t *e) {
     ui_MainScreen_group = lv_group_create();
     lv_group_add_obj(ui_MainScreen_group, ui_MainScreen);
 
     ui_MenuScreen_group = lv_group_create();
     lv_group_add_obj(ui_MenuScreen_group, ui_rollerMenuScreenItems);
 
+    ui_MemoryScreen_group = lv_group_create();
+    lv_group_add_obj(ui_MemoryScreen_group, ui_rollerMemoryScreenItems);
+
+    ui_TimerScreen_group = lv_group_create();
+    lv_group_add_obj(ui_TimerScreen_group, ui_rollerTimerScreenItems);
+
+    ui_SettingsScreen_group = lv_group_create();
+    lv_group_add_obj(ui_SettingsScreen_group, ui_rollerSettingsScreenItems);
 }
 
-void mainScreenLoadStart(lv_event_t * e)
-{
+void mainScreenLoadStart(lv_event_t *e) {
     lv_indev_set_group(indev_encoder, ui_MainScreen_group);
 }
 
-
-
-void menuScreenLoadStart(lv_event_t * e) {
-   // lv_group_set_editing(ui_MenuScreen_group,true);
+void menuScreenLoadStart(lv_event_t *e) {
+    lv_group_set_editing(ui_MenuScreen_group, true);
     lv_indev_set_group(indev_encoder, ui_MenuScreen_group);
 
 }
 
-void menuScreenRollerItemClicked(lv_event_t * e)
-{
+void memoryScreenLoadStart(lv_event_t *e) {
+    lv_indev_set_group(indev_encoder, ui_MemoryScreen_group);
+}
+
+void timerScreenLoadStart(lv_event_t *e) {
+    lv_indev_set_group(indev_encoder, ui_TimerScreen_group);
+}
+
+void settingsScreenLoadStart(lv_event_t *e) {
+    lv_indev_set_group(indev_encoder, ui_SettingsScreen_group);
+}
+
+
+void menuScreenRollerItemClicked(lv_event_t *e) {
+    ESP_LOGI("menuScreenRollerItemClicked","target ptr: %p",   lv_event_get_target(e));
+
     switch (lv_roller_get_selected(ui_rollerMenuScreenItems)) {
         case 0:
-            _ui_screen_change(ui_MainScreen, LV_SCR_LOAD_ANIM_NONE, 500, 0);
-            break;
-        case 1:
             _ui_screen_change(ui_MemoryScreen, LV_SCR_LOAD_ANIM_NONE, 500, 0);
             break;
-        case 2:
+        case 1:
             _ui_screen_change(ui_TimerScreen, LV_SCR_LOAD_ANIM_NONE, 500, 0);
             break;
-        case 3:
+        case 2:
             _ui_screen_change(ui_SettingsScreen, LV_SCR_LOAD_ANIM_NONE, 500, 0);
+            break;
+        default:
+            _ui_screen_change(ui_MainScreen, LV_SCR_LOAD_ANIM_NONE, 500, 0);
+            break;
+    }
+
+
+}
+
+void memoryScreenRollerItemClicked(lv_event_t *e) {
+    switch (lv_roller_get_selected(ui_rollerMemoryScreenItems)) {
+        case 0:
+            ESP_LOGI("memoryScreenRollerItemClicked", "M1");
+            break;
+        case 1:
+            ESP_LOGI("memoryScreenRollerItemClicked", "M2");
+            break;
+        case 2:
+            ESP_LOGI("memoryScreenRollerItemClicked", "M3");
+            break;
+        default:
+            _ui_screen_change(ui_MenuScreen, LV_SCR_LOAD_ANIM_NONE, 500, 0);
+            break;
+    }
+}
+
+void timerScreenRollerItemClicked(lv_event_t *e) {
+    switch (lv_roller_get_selected(ui_rollerTimerScreenItems)) {
+        case 0:
+            ESP_LOGI("timerScreenRollerItemClicked", "OFF");
+            break;
+        case 1:
+            ESP_LOGI("timerScreenRollerItemClicked", "10 MINUTES");
+            break;
+        case 2:
+            ESP_LOGI("timerScreenRollerItemClicked", "30 MINUTES");
+            break;
+        case 3:
+            ESP_LOGI("timerScreenRollerItemClicked", "45 MINUTES");
+            break;
+        case 4:
+            ESP_LOGI("timerScreenRollerItemClicked", "1 HOUR");
+            break;
+        default:
+            _ui_screen_change(ui_MenuScreen, LV_SCR_LOAD_ANIM_NONE, 500, 0);
+            break;
+    }
+}
+
+void settingsScreenRollerItemClicked(lv_event_t *e) {
+    switch (lv_roller_get_selected(ui_rollerSettingsScreenItems)) {
+        case 0:
+            ESP_LOGI("settingsScreenRollerItemClicked", "WIFI");
+            break;
+        case 1:
+            ESP_LOGI("settingsScreenRollerItemClicked", "MOTOR SPEED");
+            break;
+        default:
+            _ui_screen_change(ui_MenuScreen, LV_SCR_LOAD_ANIM_NONE, 500, 0);
             break;
     }
 }
