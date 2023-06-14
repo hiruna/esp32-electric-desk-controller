@@ -21,7 +21,7 @@
 
 #include "lvgl_helpers.h"
 #include "ui/ui.h"
-
+#include "ui/ui_events.c"
 #if defined CONFIG_USE_LV_TOUCH_CALIBRATION
 
 #include "lv_tc.h"
@@ -59,6 +59,13 @@ const gpio_num_t GPIO_CTRL_PANEL_ENC_B = GPIO_NUM_5;
 const gpio_num_t GPIO_CTRL_PANEL_ENC_BTN = GPIO_NUM_13;
 const uint64_t GPIO_CTRL_PANEL_ENC_BTN_BIT_MASK = (1ULL << GPIO_CTRL_PANEL_ENC_BTN);
 
+// gpio/pin definitions
+//const gpio_num_t GPIO_BTN_UP = GPIO_NUM_4;
+//const gpio_num_t GPIO_BTN_DOWN = GPIO_NUM_5;
+//const gpio_num_t GPIO_BTN_SET = GPIO_NUM_13;
+//const uint64_t GPIO_BTN_UP_DOWN_SET_BIT_MASK = ((1ULL << GPIO_BTN_UP) | (1ULL << GPIO_BTN_DOWN) | (1ULL << GPIO_BTN_SET));
+
+
 pcnt_unit_handle_t ctrl_panel_enc_pcnt_unit = NULL;
 //static QueueHandle_t ctrl_panel_enc_queue = NULL;
 //
@@ -76,7 +83,7 @@ pcnt_unit_handle_t ctrl_panel_enc_pcnt_unit = NULL;
 //    xQueueSendFromISR(queue, &(edata->watch_point_value), &high_task_wakeup);
 //    return (high_task_wakeup == pdTRUE);
 //}
-
+lv_group_t * g;
 
 static void lv_tick_task(void *arg) {
     (void) arg;
@@ -120,22 +127,41 @@ void ctrl_panel_enc_lv_cb(struct _lv_indev_drv_t *drv, lv_indev_data_t*data){
     static int lastEncVal = 0;
     int currentEncVal;
     pcnt_unit_get_count(ctrl_panel_enc_pcnt_unit, &currentEncVal);
-
     int encDiff = currentEncVal-lastEncVal;
-    if(data->enc_diff != encDiff) {
-        ESP_LOGI(TAG, "encoder value: %d | last diff: %d, current diff: %d", currentEncVal, data->enc_diff, encDiff);
-    }
+//    if(data->enc_diff != encDiff) {
+//        ESP_LOGI(TAG, "encoder value: %d | last diff: %d, current diff: %d", currentEncVal, data->enc_diff, encDiff);
+//    }
+//    lv_obj_t * focused_obj = lv_group_get_focused(g);
+//
+//    if(focused_obj == ui_BootScreen) {
+//        ESP_LOGI(TAG, "ui_BootScreen is focused");
+//    }
+//    if(focused_obj == ui_MainScreen) {
+//        ESP_LOGI(TAG, "ui_MainScreen is focused");
+//    }
+//    if(focused_obj == ui_MenuScreen) {
+//        ESP_LOGI(TAG, "ui_MenuScreen is focused");
+//    }
+//    if(focused_obj == ui_SettingsScreen) {
+//        ESP_LOGI(TAG, "ui_SettingsScreen is focused");
+//    }
+//    if(focused_obj == ui_TimerScreen) {
+//        ESP_LOGI(TAG, "ui_TimerScreen is focused");
+//    }
+
     if(encDiff<0) {
+      //  ESP_LOGI(TAG,"focused obj: %p", focused_obj);
         encDiff = -1;
     } else if(encDiff > 0) {
+      //  ESP_LOGI(TAG,"focused obj: %p", focused_obj);
         encDiff = 1;
     } else {
         encDiff = 0;
     }
     data->enc_diff = (int16_t)encDiff;
-
+    //data->key = LV_KEY_ENTER;
     if(ctrl_panel_enc_btn_pressed()) {
-        ESP_LOGI(TAG, "encoder btn pressed!");
+       // ESP_LOGI(TAG, "encoder btn pressed!");
         data->state = LV_INDEV_STATE_PR;
     } else{
         data->state = LV_INDEV_STATE_REL;
@@ -297,10 +323,12 @@ static void guiTask(void *pvParameter) {
     lv_indev_drv_init(&indev_encoder_drv);
     indev_encoder_drv.type = LV_INDEV_TYPE_ENCODER;
     indev_encoder_drv.read_cb = ctrl_panel_enc_lv_cb;
-    indev_encoder_drv.long_press_time = 1000;
-    lv_indev_t* indev_encoder = lv_indev_drv_register(&indev_encoder_drv);
-    lv_group_t * g = lv_group_create();
-    lv_indev_set_group(indev_encoder, g);
+    indev_encoder_drv.long_press_time = 500;
+    //lv_indev_t* indev_encoder = lv_indev_drv_register(&indev_encoder_drv);
+    indev_encoder = lv_indev_drv_register(&indev_encoder_drv);
+//    g = lv_group_create();
+//    lv_group_set_default(g);
+//    lv_indev_set_group(indev_encoder, g);
 
     /* Create and start a periodic timer interrupt to call lv_tick_inc */
     const esp_timer_create_args_t periodic_timer_args = {
@@ -327,10 +355,23 @@ static void guiTask(void *pvParameter) {
 #else
     ui_init();
 #endif
+//
+//lv_group_add_obj(g, ui_MainScreen);
+//    lv_group_add_obj(g, ui_rollerMenuScreenItems);
 
-    lv_group_add_obj(g, ui_MainScreen);
-    lv_group_add_obj(g, ui_MenuScreen);
-    lv_group_add_obj(g, ui_rollerMenuScreenItems);
+//    lv_group_add_obj(g, ui_rollerMenuScreenItems);
+//   lv_obj_add_flag(ui_rollerMenuScreenItems, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
+//   lv_obj_add_state(ui_rollerMenuScreenItems, LV_STATE_FOCUSED | LV_STATE_EDITED);
+   // lv_event_send(ui_rollerMenuScreenItems, LV_EVENT_SHORT_CLICKED, NULL);
+    //lv_event_send(ui_rollerMenuScreenItems, LV_EVENT_SHORT_CLICKED, NULL);
+    //lv_group_focus_obj(ui_rollerMenuScreenItems);
+   // lv_group_add_obj(g, ui_rollerMenuScreenItems);
+   // lv_group_add_obj(g, ui_rollerMemoryScreenItems);
+   // lv_group_add_obj(g, ui_rollerTimerScreenItems);
+   // lv_group_add_obj(g, ui_rollerSettingsScreenItems);
+   // lv_group_add_obj(g, ui_rollerTestRollerScreenItems);
+
+
 
     while (1) {
         /* Delay 1 tick (assumes FreeRTOS tick is 10ms */

@@ -1,7 +1,11 @@
 SET(SOURCES screens/ui_BootScreen.c
     screens/ui_MainScreen.c
     screens/ui_MenuScreen.c
+    screens/ui_MemoryScreen.c
+    screens/ui_TimerScreen.c
+    screens/ui_SettingsScreen.c
     ui.c
+ui_events.c
     ui_helpers.c
     images/ui_img_wifi_solid_png.c
     fonts/ui_font_FontAwesomeRegular12.c

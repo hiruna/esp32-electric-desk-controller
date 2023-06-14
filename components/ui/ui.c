@@ -40,7 +40,30 @@ void ui_event_MenuScreen(lv_event_t * e);
 lv_obj_t * ui_MenuScreen;
 lv_obj_t * ui_panelMenuScreenHeader;
 lv_obj_t * ui_Label1;
+void ui_event_rollerMenuScreenItems(lv_event_t * e);
 lv_obj_t * ui_rollerMenuScreenItems;
+
+// SCREEN: ui_MemoryScreen
+void ui_MemoryScreen_screen_init(void);
+lv_obj_t * ui_MemoryScreen;
+lv_obj_t * ui_panelMemoryScreenHeader;
+lv_obj_t * ui_Label2;
+lv_obj_t * ui_rollerMemoryScreenItems;
+
+// SCREEN: ui_TimerScreen
+void ui_TimerScreen_screen_init(void);
+lv_obj_t * ui_TimerScreen;
+lv_obj_t * ui_panelTimerScreenHeader;
+lv_obj_t * ui_Label3;
+lv_obj_t * ui_rollerTimerScreenItems;
+
+// SCREEN: ui_SettingsScreen
+void ui_SettingsScreen_screen_init(void);
+lv_obj_t * ui_SettingsScreen;
+lv_obj_t * ui_panelSettingsScreenHeader;
+lv_obj_t * ui_Label4;
+lv_obj_t * ui_rollerSettingsScreenItems;
+void ui_event____initial_actions0(lv_event_t * e);
 lv_obj_t * ui____initial_actions0;
 
 ///////////////////// TEST LVGL SETTINGS ////////////////////
@@ -69,13 +92,32 @@ void ui_event_MainScreen(lv_event_t * e)
     if(event_code == LV_EVENT_LONG_PRESSED) {
         _ui_screen_change(ui_MenuScreen, LV_SCR_LOAD_ANIM_NONE, 500, 0);
     }
+    if(event_code == LV_EVENT_SCREEN_LOAD_START) {
+        mainScreenLoadStart(e);
+    }
 }
 void ui_event_MenuScreen(lv_event_t * e)
 {
     lv_event_code_t event_code = lv_event_get_code(e);
     lv_obj_t * target = lv_event_get_target(e);
-    if(event_code == LV_EVENT_LONG_PRESSED) {
-        _ui_screen_change(ui_MainScreen, LV_SCR_LOAD_ANIM_NONE, 500, 0);
+    if(event_code == LV_EVENT_SCREEN_LOAD_START) {
+        menuScreenLoadStart(e);
+    }
+}
+void ui_event_rollerMenuScreenItems(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+    lv_obj_t * target = lv_event_get_target(e);
+    if(event_code == LV_EVENT_CLICKED) {
+        menuScreenRollerItemClicked(e);
+    }
+}
+void ui_event____initial_actions0(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+    lv_obj_t * target = lv_event_get_target(e);
+    if(event_code == LV_EVENT_SCREEN_LOAD_START) {
+        initialActions(e);
     }
 }
 
@@ -84,11 +126,18 @@ void ui_event_MenuScreen(lv_event_t * e)
 void ui_init(void)
 {
     lv_disp_t * dispp = lv_disp_get_default();
-    lv_theme_t * theme = lv_theme_mono_init(dispp, false, LV_FONT_DEFAULT);
+lv_theme_t * theme = lv_theme_mono_init(dispp, false, LV_FONT_DEFAULT);
+
     lv_disp_set_theme(dispp, theme);
     ui_BootScreen_screen_init();
     ui_MainScreen_screen_init();
     ui_MenuScreen_screen_init();
+    ui_MemoryScreen_screen_init();
+    ui_TimerScreen_screen_init();
+    ui_SettingsScreen_screen_init();
     ui____initial_actions0 = lv_obj_create(NULL);
+    lv_obj_add_event_cb(ui____initial_actions0, ui_event____initial_actions0, LV_EVENT_ALL, NULL);
+
+    lv_disp_load_scr(ui____initial_actions0);
     lv_disp_load_scr(ui_BootScreen);
 }

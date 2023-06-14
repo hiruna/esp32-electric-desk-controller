@@ -10,6 +10,11 @@
 extern "C" {
 #endif
 
+void initialActions(lv_event_t * e);
+void mainScreenLoadStart(lv_event_t * e);
+void menuScreenLoadStart(lv_event_t * e);
+void menuScreenRollerItemClicked(lv_event_t * e);
+
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif
