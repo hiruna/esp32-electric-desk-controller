@@ -36,8 +36,13 @@ void mainScreenLoadStart(lv_event_t *e) {
 }
 
 void menuScreenLoadStart(lv_event_t *e) {
-    lv_group_set_editing(ui_MenuScreen_group, true);
-    lv_indev_set_group(indev_encoder, ui_MenuScreen_group);
+  // lv_group_set_editing(ui_MenuScreen_group, true);
+   lv_indev_set_group(indev_encoder, ui_MenuScreen_group);
+   lv_obj_add_state(ui_rollerMenuScreenItems, LV_STATE_FOCUSED | LV_STATE_EDITED);
+    //lv_event_send(ui_rollerMenuScreenItems, LV_EVENT_CLICKED, NULL);
+   // ui_MenuScreen_group->editing = true;
+   // lv_group_send_data(ui_MenuScreen_group, LV_KEY_ENTER);
+    // lv_group_send_data(ui_MenuScreen_group, LV_KEY_ENTER);
 
 }
 
@@ -55,7 +60,8 @@ void settingsScreenLoadStart(lv_event_t *e) {
 
 
 void menuScreenRollerItemClicked(lv_event_t *e) {
-    ESP_LOGI("menuScreenRollerItemClicked","target ptr: %p",   lv_event_get_target(e));
+    ESP_LOGI("menuScreenRollerItemClicked","target ptr: %p | current target ptr: %p |  param: %p | user data: %p",   lv_event_get_target(e), lv_event_get_current_target(e),
+             lv_event_get_param(e), lv_event_get_user_data(e));
 
     switch (lv_roller_get_selected(ui_rollerMenuScreenItems)) {
         case 0:

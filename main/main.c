@@ -122,6 +122,16 @@ bool ctrl_panel_enc_btn_pressed() {
     return gpio_get_level(GPIO_CTRL_PANEL_ENC_BTN) == 0;
 }
 
+float deskHeightValue = 123.5;
+
+char * floatToStr(float num) {
+    int len = snprintf(NULL, 0, "%f", num);
+    char *result = malloc(len + 1);
+    snprintf(result, len + 1, "%.1f", num);
+    // free(result);
+    return result;
+}
+
 void ctrl_panel_enc_lv_cb(struct _lv_indev_drv_t *drv, lv_indev_data_t*data){
 
     static int lastEncVal = 0;
@@ -155,8 +165,13 @@ void ctrl_panel_enc_lv_cb(struct _lv_indev_drv_t *drv, lv_indev_data_t*data){
     } else if(encDiff > 0) {
       //  ESP_LOGI(TAG,"focused obj: %p", focused_obj);
         encDiff = 1;
+
     } else {
         encDiff = 0;
+    }
+    if(lv_scr_act()==ui_MainScreen) {
+        deskHeightValue = deskHeightValue + (float)(0.5*encDiff);
+        lv_label_set_text(ui_lblDeskHeightValue, floatToStr(deskHeightValue));
     }
     data->enc_diff = (int16_t)encDiff;
     //data->key = LV_KEY_ENTER;
@@ -169,6 +184,7 @@ void ctrl_panel_enc_lv_cb(struct _lv_indev_drv_t *drv, lv_indev_data_t*data){
     lastEncVal = currentEncVal;
   //  return false; /*No buffering now so no more data read*/
 }
+
 
 static void setupCtrlPanelEncoder() {
     // ----------------
@@ -237,7 +253,6 @@ static void setupCtrlPanelEncoder() {
         ESP_LOGE(TAG, "error configuring gpio: %s", esp_err_to_name(err));
     }
     // ----------------
-
 }
 static void guiTask(void *pvParameter) {
 
@@ -354,6 +369,7 @@ static void guiTask(void *pvParameter) {
 #endif
 #else
     ui_init();
+    lv_label_set_text(ui_lblDeskHeightValue, floatToStr(deskHeightValue));
 #endif
 //
 //lv_group_add_obj(g, ui_MainScreen);
