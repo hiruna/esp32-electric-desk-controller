@@ -132,6 +132,24 @@ char * floatToStr(float num) {
     return result;
 }
 
+void ui_MainScreenHideAllDeskDirImg() {
+    lv_obj_add_flag(ui_imgMainScreenDeskHeightDirUp, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_add_flag(ui_imgMainScreenDeskHeightDirDown, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_add_flag(ui_imgMainScreenDeskHeightDirNone, LV_OBJ_FLAG_HIDDEN);
+}
+void ui_MainScreenShowDeskDirImgUp() {
+    ui_MainScreenHideAllDeskDirImg();
+    lv_obj_clear_flag(ui_imgMainScreenDeskHeightDirUp, LV_OBJ_FLAG_HIDDEN);
+}
+void ui_MainScreenShowDeskDirImgDown() {
+    ui_MainScreenHideAllDeskDirImg();
+    lv_obj_clear_flag(ui_imgMainScreenDeskHeightDirDown, LV_OBJ_FLAG_HIDDEN);
+}
+void ui_MainScreenShowDeskDirImgNone() {
+    ui_MainScreenHideAllDeskDirImg();
+    lv_obj_clear_flag(ui_imgMainScreenDeskHeightDirNone, LV_OBJ_FLAG_HIDDEN);
+}
+
 void ctrl_panel_enc_lv_cb(struct _lv_indev_drv_t *drv, lv_indev_data_t*data){
 
     static int lastEncVal = 0;
@@ -161,12 +179,21 @@ void ctrl_panel_enc_lv_cb(struct _lv_indev_drv_t *drv, lv_indev_data_t*data){
 
     if(encDiff<0) {
       //  ESP_LOGI(TAG,"focused obj: %p", focused_obj);
+        if(lv_scr_act()==ui_MainScreen) {
+            ui_MainScreenShowDeskDirImgDown();
+        }
         encDiff = -1;
     } else if(encDiff > 0) {
       //  ESP_LOGI(TAG,"focused obj: %p", focused_obj);
+        if(lv_scr_act()==ui_MainScreen) {
+            ui_MainScreenShowDeskDirImgUp();
+        }
         encDiff = 1;
 
     } else {
+        if(lv_scr_act()==ui_MainScreen) {
+            ui_MainScreenShowDeskDirImgNone();
+        }
         encDiff = 0;
     }
     if(lv_scr_act()==ui_MainScreen) {

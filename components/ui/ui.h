@@ -28,6 +28,7 @@ extern lv_obj_t * ui_MainScreen;
 extern lv_obj_t * ui_panelMainScreenHeader;
 extern lv_obj_t * ui_panelMainScreenHeaderLeft;
 extern lv_obj_t * ui_imgMainScreenHeaderTimer;
+extern lv_obj_t * ui_imgMainScreenHeaderClock;
 extern lv_obj_t * ui_lblMainScreenHeaderTimerText;
 extern lv_obj_t * ui_panelMainScreenHeaderDivider;
 extern lv_obj_t * ui_panelMainScreenHeaderRight;
@@ -35,6 +36,10 @@ extern lv_obj_t * ui_imgMainScreenHeaderLockStatus;
 extern lv_obj_t * ui_imgMainScreenHeaderWifi;
 extern lv_obj_t * ui_panelMainScreenMid;
 extern lv_obj_t * ui_lblDeskHeightValue;
+extern lv_obj_t * ui_Panel2;
+extern lv_obj_t * ui_imgMainScreenDeskHeightDirUp;
+extern lv_obj_t * ui_imgMainScreenDeskHeightDirDown;
+extern lv_obj_t * ui_imgMainScreenDeskHeightDirNone;
 extern lv_obj_t * ui_lblDeskHeightUnits;
 extern lv_obj_t * ui_panelMainScreenFooter;
 extern lv_obj_t * ui_lblMainScreenFooterNotifText;
@@ -73,7 +78,12 @@ extern lv_obj_t * ui_rollerSettingsScreenItems;
 void ui_event____initial_actions0(lv_event_t * e);
 extern lv_obj_t * ui____initial_actions0;
 
+LV_IMG_DECLARE(ui_img_stopwatch_png);    // assets/stopwatch.png
+LV_IMG_DECLARE(ui_img_clock_png);    // assets/clock.png
 LV_IMG_DECLARE(ui_img_wifi_solid_png);    // assets/wifi_solid.png
+LV_IMG_DECLARE(ui_img_sort_up_png);    // assets/sort_up.png
+LV_IMG_DECLARE(ui_img_sort_down_png);    // assets/sort_down.png
+LV_IMG_DECLARE(ui_img_empty_12x12_png);    // assets/empty_12x12.png
 
 LV_FONT_DECLARE(ui_font_FontAwesomeRegular12);
 LV_FONT_DECLARE(ui_font_FontAwesomeRegular24);

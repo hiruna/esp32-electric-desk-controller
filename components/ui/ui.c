@@ -23,6 +23,7 @@ lv_obj_t * ui_MainScreen;
 lv_obj_t * ui_panelMainScreenHeader;
 lv_obj_t * ui_panelMainScreenHeaderLeft;
 lv_obj_t * ui_imgMainScreenHeaderTimer;
+lv_obj_t * ui_imgMainScreenHeaderClock;
 lv_obj_t * ui_lblMainScreenHeaderTimerText;
 lv_obj_t * ui_panelMainScreenHeaderDivider;
 lv_obj_t * ui_panelMainScreenHeaderRight;
@@ -30,6 +31,10 @@ lv_obj_t * ui_imgMainScreenHeaderLockStatus;
 lv_obj_t * ui_imgMainScreenHeaderWifi;
 lv_obj_t * ui_panelMainScreenMid;
 lv_obj_t * ui_lblDeskHeightValue;
+lv_obj_t * ui_Panel2;
+lv_obj_t * ui_imgMainScreenDeskHeightDirUp;
+lv_obj_t * ui_imgMainScreenDeskHeightDirDown;
+lv_obj_t * ui_imgMainScreenDeskHeightDirNone;
 lv_obj_t * ui_lblDeskHeightUnits;
 lv_obj_t * ui_panelMainScreenFooter;
 lv_obj_t * ui_lblMainScreenFooterNotifText;
@@ -71,6 +76,7 @@ void ui_event_rollerSettingsScreenItems(lv_event_t * e);
 lv_obj_t * ui_rollerSettingsScreenItems;
 void ui_event____initial_actions0(lv_event_t * e);
 lv_obj_t * ui____initial_actions0;
+const lv_img_dsc_t * ui_imgset_empty_x[1] = {&ui_img_empty_12x12_png};
 
 ///////////////////// TEST LVGL SETTINGS ////////////////////
 #if LV_COLOR_DEPTH != 1

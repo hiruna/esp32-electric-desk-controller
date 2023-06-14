@@ -7,8 +7,12 @@ SET(SOURCES screens/ui_BootScreen.c
     ui.c
 ui_events.c
     ui_helpers.c
-    ui_events.c
+    images/ui_img_stopwatch_png.c
+    images/ui_img_clock_png.c
     images/ui_img_wifi_solid_png.c
+    images/ui_img_sort_up_png.c
+    images/ui_img_sort_down_png.c
+    images/ui_img_empty_12x12_png.c
     fonts/ui_font_FontAwesomeRegular12.c
     fonts/ui_font_FontAwesomeRegular24.c
     fonts/ui_font_MontserratSemiBold10.c
